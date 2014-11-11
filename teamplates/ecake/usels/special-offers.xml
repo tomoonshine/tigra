@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selection>
+	<target result="pages">
+		<type module="catalog" method="object" />
+	</target>
+	<property name="best_offers" value="1" />
+	<property name="is_active" value="1" />
+	<sort>rand()</sort>
+	<limit page="0">{limit}</limit>
+</selection>

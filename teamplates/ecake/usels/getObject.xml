@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selection>
+    <target result="pages">
+        <type module="catalog" method="object" />
+    </target>
+    <property name="{name_property}" value="1" />
+	<property name="is_active" value="1" />
+	<extended>
+		<properties>h1, common_quantity, photo_new_field, summ_rating,priority</properties>
+		<groups>item_properties</groups>
+	</extended>
+	<sort order="descending">priority</sort>
+    <limit page="0">{limit}</limit>
+</selection>
