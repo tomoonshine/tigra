@@ -309,5 +309,8 @@
 	<xsl:include href="404.xsl" />
 	<xsl:include href="recentPages.xsl" />
 	<xsl:include href="sticky.xsl" />
+	
+	<!-- Модуль используеться для разработки -->
+	<xsl:include href="test.xsl" />
 
 </xsl:stylesheet>

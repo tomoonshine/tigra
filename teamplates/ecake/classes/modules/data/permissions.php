@@ -1,5 +1,8 @@
 <?php
     $permissions = Array(
-        'main' => Array('dateru')
+        'main' => Array('dateru'),
+		'comer' => Array('getSubCategory'),
+		'seller' => Array('addNewShop')
     );
+	
 ?>
