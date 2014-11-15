@@ -78,12 +78,19 @@ class data_custom extends def_module {
 	}
 	
 	/*
-		функция добавляет новый домен, настраивает ему шаблон, и добавляет главную 
-		страницу и каталог товаров
+		функция добавляет новый домен, настраивает ему шаблон, и добавляет
+		главную страницу 
+		каталог товаров
 	*/
-	public function addNewShop($name){
-
+	public function addNewShop($name=NULL){
+	
 		$collection = domainsCollection::getInstance(); 
+		
+		if (!$name)	$name = getRequest('shopName');
+		
+		// Страница для вывода в случае ошибки
+		$refererUrl = getServer('HTTP_REFERER');
+		$this->errorSetErrorPage($refererUrl);
 		
 		// Проверка на существование домена в системе с таким же именем
 		$domains = $collection->getList();
@@ -91,18 +98,42 @@ class data_custom extends def_module {
 			$host = $domain->getHost();
 			if($name.".tigra21.ru" == $host)
 			{
-				echo "<br/>домен существует ";
-				return;
+				// echo "<br/>домен существует ";
+				$this->errorAddErrors('Магазин с таким названием уже есть');
+				$this->errorThrow('public');
 			}
+		}
+		
+		// получить текущего пользователя 
+		$permissions = permissionsCollection::getInstance();
+		$userId = $permissions->getUserId();
+		$objectsCollection = umiObjectsCollection::getInstance();
+		$user = $objectsCollection->getObject($userId);
+		
+		// проверить текущего пользователя на наличее магазина
+		if ($user->getValue('shopid')) {
+			$this->errorAddErrors('На данного пользователя уже зарегистрирован один магазин');
+			$this->errorThrow('public');
+			// echo "<br/>Магазин у пользователя есть ";
+			// return;
 		}
 		
 		// добавление домена
 		// язык в системе по умолчанию, нужен при добавлении нового домена
 		$defLangId = $collection->getDefaultDomain()->getDefaultLangId();
-		// а ну-ка голубчик добавька новый домен
+		// а ну-ка приятель добавька новый домен
 		$newDomainId = $collection->addDomain($name.".tigra21.ru", $defLangId);
-		
-		
+		if($newDomainId === false) {
+			$this->errorAddErrors('Неудалось создать магазин ошибка с доменом. Попробуйте позднее или обратитесь к администратору сайта.');
+			$this->errorThrow('public');
+			// echo "Не удалось создать новую страницу";
+			// return;
+		}
+
+		// Записывает домен к пользователю
+		$user->setValue('shopid', $newDomainId);
+		$user->setValue('magazin', $name);
+
 		// настройка шаблона
 		$collection = templatescollection::getInstance(); 
 		// добавляем шаблон к новому домену
@@ -112,34 +143,80 @@ class data_custom extends def_module {
 		
 		// добавление главной страницы и каталога
 		$hierarchy = umiHierarchy::getInstance(); 
+		
 		// добавить Главную страницу тип страницы 55
 		$newPageId = $hierarchy->addElement(0,55,"Главная","main",55,$newDomainId,$defLangId,$newTmplId);
+		if($newPageId === false) {
+			$this->errorAddErrors('Не удалось создать главную страницу. Обратитесь к администратору сайта.');
+			$this->errorThrow('public');
+			// echo "Не удалось создать новую страницу";
+			// return;
+		}
+		 
+		//Установим права на страницу в состояние "по умолчанию"
+		$permissions->setDefaultPermissions($newPageId);
+		
+		// // Вывставить права на страницу просмотр всем
+		// $permissions->setElementPermissions(13,$newPageId,1);
+		
 		// выставить страница по умолчанию и активная
-		$hierarchy = umiHierarchy::getInstance(); 
 		$page = $hierarchy->getElement($newPageId); 
 		$page->setIsActive(true);
 		$page->setIsDefault(true);
+		
 		// добавить Каталог тип 82
 		$newPageId = $hierarchy->addElement(0,82,"Товары","goods",82,$newDomainId,$defLangId,$newTmplId);
+		if($newPageId === false) {
+			$this->errorAddErrors('Не удалось создать каталог товаров. Обратитесь к администратору сайта.');
+			$this->errorThrow('public');
+			// echo "Не удалось создать новую страницу";
+			// return;
+		}
+		 //Установим права на страницу в состояние "по умолчанию"
+		$permissions->setDefaultPermissions($newPageId);
+		// $permissions->setElementPermissions(13,$newPageId,1);
 		$page = $hierarchy->getElement($newPageId); 
 		$page->setIsActive(true);
+		
+		// Перевод пользователя в личный кабинет
+		$this->redirect($this->pre_lang . "/users/settings/");
+	}
+	
+	public function setActive_mod() {
+
 	}
 	
 	public function test() {
+		
+		// echo "<br/>begin 1";
+
+		
+		// Переход на страницу в случае ошибки
+		$refererUrl = getServer('HTTP_REFERER');
+		$this->errorSetErrorPage($refererUrl);
+		
+		// Активация ошибки в работе выводяться оба сообщения
+		$this->errorAddErrors('проверка ошибок errorAddErrors message1');
+		$this->errorAddErrors('проверка ошибок errorAddErrors message2');
+		// Проверка на ошибки в работе если ошибка то переход на заданную страницу
+		$this->errorThrow('public');
+		
+		// // Добавление сообщении об ошибке
+		// $this->errorNewMessage("Проверка errorNewMessage1");
+		// $this->errorNewMessage("Проверка errorNewMessage2"); не выводиться
+		// // Вывод ошибки обнаруженных в программе
+		// $this->errorPanic();
+		
+		$this->redirect($this->pre_lang . "/users/settings/");
+		
+		// echo "<br/>end ";
+	}
+	
+	public function test2() {
 		echo "<br/>begin ";
-			$hierarchy = umiHierarchy::getInstance(); 
-			// $hierarchy->addElement(0,,"Главная",,);
-			$page = $hierarchy->getElement(98); 
-			
-			echo "<br/>id typeId ".$page->getTypeId();
-			echo "<br/>id HierarchyType ".$page->getHierarchyType();
-			echo "<br/>id ObjectType".$page->getObjectTypeId();
-			
-			// $collection = umiHierarchyTypesCollection::getInstance();
-			// foreach ($collection as $type) {
-				// echo "<br/>домен: " . $type; 
-			// }
-			
+		$hierarchy = umiHierarchy::getInstance(); 
+		$page = $hierarchy->getElement(617); 
+		$page->setIsActive(true);
 		echo "<br/>end ";
 	}
 };

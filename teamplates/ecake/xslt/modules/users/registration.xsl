@@ -112,7 +112,7 @@
 					Спасибо за регистрацию на сайте <strong><xsl:value-of select="$domain" /></strong>
 				</p>
 				<p>
-					Приятных покупок!
+					<!-- Приятных покупок! -->
 					<!-- <xsl:text>&registration-done;</xsl:text> -->
 				</p>
 			</xsl:when>
@@ -155,19 +155,14 @@
 		</xsl:choose>
 	</xsl:template>
 	
-	
 	<!-- User settings -->
-	<xsl:template match="result[@method = 'settings']">
+<!-- 	<xsl:template match="result[@method = 'settings']">
 		<xsl:apply-templates select="document('udata://users/settings')" />
-	</xsl:template>
+	</xsl:template> -->
 	
 	<xsl:template match="udata[@method = 'settings']">
 
 		<div class="pull-right"><strong>Кол-во бонусов: </strong> <xsl:choose><xsl:when test="$user-info////property[@name='bonus']/value"> <strong><xsl:value-of select="$user-info////property[@name='bonus']/value" /></strong></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose><xsl:text> </xsl:text><strong> руб. </strong></div>
-
-
-
-
 		<p class="lead">Персональная информация</p>                                               
 		<form action="{$lang-prefix}/users/settings_do_pre/"  method="post" enctype="multipart/form-data" id="settings-form">
 		<table class="table" id="acc_info">
@@ -289,5 +284,6 @@
 			</form>
 		</div>
 	</xsl:template>
+	
 	
 </xsl:stylesheet>
