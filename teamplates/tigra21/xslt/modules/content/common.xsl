@@ -35,9 +35,12 @@
 				<div class="container">
 					<div class="row">
 						<div class="span3">
+							
+							
 							<!-- Categories widget -->
 							<xsl:apply-templates select="document('udata://catalog/getCategoryList//36/100/1')/udata" mode="left-column-main" />
-							<!-- End class="widget Categories" -->
+							<xsl:apply-templates select="document('udata://data/getSubCategory/199')/udata" mode="left-column-main" />
+							
 							
 							<!-- <xsl:apply-templates select="document('usel://getObject/?name_property=best_offers&amp;limit=3')/udata" mode="widget-category">
 							    <xsl:with-param name='title' select="'Лучшие предложения'" />

@@ -926,5 +926,31 @@ class users_custom extends def_module {
 		return;
 	}
 	
+	/*
+		перхватчик события регистрации пользователя
+		после регистрации если форма является регистрацией продавца
+		то пользователю назначаются права продавца
+	*/
+	function sellerRegistrate(iUmiEventPoint $oEventPoint) {
+		
+		if ($oEventPoint->getMode() === "before") return true;
+
+		if ($oEventPoint->getMode() === "after") {
+			
+			// если форма регистрации продавца
+			if(getRequest('seller') == "true") {
+				
+				$objectsCollection = umiObjectsCollection::getInstance();
+				$seller = $objectsCollection->getObject($oEventPoint->getParam("user_id"));
+				// права продавца
+				$rules = array('10196');
+				// пользователю назначаються права продавца
+				$seller->setValue('groups',$rules );
+		
+			}
+			 return true;
+		}
+
+	}
 };
 ?>

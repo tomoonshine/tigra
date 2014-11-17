@@ -68,4 +68,6 @@
 	<xsl:include href="modules/menu/common.xsl" />
 	<xsl:include href="modules/core/common.xsl" />
 	<xsl:include href="modules/maps/common.xsl" />
+	<xsl:include href="modules/category/common.xsl" />
+	
 </xsl:stylesheet>
