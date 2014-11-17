@@ -1,0 +1,179 @@
+var cart = {};
+
+cart.init = function(){
+	cart.city();
+	cart.delivery();
+	cart.payment.init();
+	
+	jQuery('#cart_form').submit(function(){
+		return cart.submit;
+	});
+	
+};
+
+cart.submit = false;
+
+cart.delivery = {};
+cart.delivery = function(){
+	var deliveryAddress = cart.delivery.deliveryAddress.getInput(),
+		deliveryId = cart.delivery.deliveryId.getInput(),
+		otherFieldAddress = $('.other-field-address'),
+		new_address = jQuery('#new-address'),
+		notNew = cart.delivery.deliveryAddress.getInput(true);
+		$('#payment-choose, #delivery-choose').hide();
+	
+	jQuery.each(deliveryAddress, function(index){
+		var _this = deliveryAddress.eq(index);
+			cart.delivery.addressBlock(_this);
+			if (_this.val() == 'new') {cart.city(); return false;}
+			cart.viewField.delivery(deliveryId, cart.arrCompare(_this.data('city'),  cart.delivery.deliveryId.getArrayCity()), 'delivery-choose');
+	});
+	
+	deliveryAddress.change(function(){
+		var _this = jQuery(this);
+		_this.attr('checked','checked').trigger('refresh');
+		//cart.delivery.addressBlock(_this);
+		otherFieldAddress.hide();
+		if (_this.val() == 'new') {
+			otherFieldAddress.show();
+		}
+	});
+	
+	deliveryId.change(function(){
+		var _this = jQuery(this),
+			payment = _this.data('payment'),
+			requestAddress = _this.data('request-address');
+			
+		_this.attr('checked','checked').trigger('refresh');
+		
+		if (notNew.hasClass('not-view')) notNew.attr('checked', 'checked').trigger('refresh');
+			else notNew = cart.delivery.deliveryAddress.getInput(true);
+		
+		if (requestAddress) {			
+			if (notNew.val() == 'new') otherFieldAddress.show(); else otherFieldAddress.hide();
+			new_address.show();
+		} else {
+			if (notNew.val() == 'new') notNew.removeAttr('checked').trigger('refresh');
+			otherFieldAddress.hide();
+			new_address.hide();
+		}
+		
+		
+		cart.viewField.payment(payment, 'payment-choose');
+	});
+	
+};
+cart.delivery.addressBlock = function(input){
+	var new_address = jQuery('#new-address');
+	if (input[0].checked && input.val() == 'new') {
+		new_address.show();
+	} else {
+		new_address.hide();
+	}
+};
+
+cart.viewField = new function(){
+	var self = this;
+		this.delivery = function(inputs, index, block){
+			var controlGroupBlock = jQuery('#' + block),
+				controlGroup = jQuery('.control-group', controlGroupBlock);
+	
+				controlGroup.hide();
+				controlGroup.find('input').removeAttr('checked').trigger('refresh');
+				
+			for (var key in index){
+				var id = inputs.eq(index[key]).val();
+					jQuery('.control-group-'+id, controlGroupBlock).show();
+			}
+		};
+		this.payment = function(payment, block){
+			var paymentBlock= jQuery('#'+block).show(),
+				controlGroup = paymentBlock.find('.control-group');
+			if (!payment.length) {
+				controlGroup.show();
+				return false;
+			}
+			controlGroup.hide();
+			controlGroup.find('input').removeAttr('checked').trigger('refresh');
+			
+			for (var key in payment){
+					jQuery('#'+block + ' .control-group-'+payment[key]).show();
+			}
+		};
+};
+
+cart.arrCompare = function(need, arrHeand) {
+	var return_val = new Array(), i = 0;
+	
+	for(var key in arrHeand) {
+		for (var k in arrHeand[key]) {
+			var heandVal = parseInt(arrHeand[key][k], 10);
+			if (heandVal == need) {
+				return_val[i++] = key;
+			}
+		}
+	}
+	if (return_val.length == 0) return_val = false;
+	return return_val;
+}
+
+cart.delivery.deliveryAddress = new function(){
+	var self = this;
+		this.getInput = function(checked){
+			var chek = (checked == true) ? ":checked" : ""; 
+			return jQuery('input[name="delivery-address"]' + chek);
+		};
+};
+
+cart.delivery.deliveryId = new function(){
+	var self = this;
+		this.getInput = function(){ return jQuery('input[name="delivery-id"]'); };
+		this.getArrayCity = function(){
+			var addressInput = self.getInput(),
+				i = 0,
+				result = new Array();
+				
+				$.each(addressInput, function(index){
+					var _this = addressInput.eq(index);
+					result[i] = _this.data('city'); i++;
+				});
+			return result;
+		}
+};
+
+cart.payment = new function(){
+	var self = this;
+		this.getInput = function(){ return jQuery('input[name="payment-id"]'); };
+		this.init = function(){
+			var paymentInput = self.getInput();
+			paymentInput.change(function(){
+				var _this = jQuery(this);
+				_this.attr('checked','checked').trigger('refresh');
+				cart.submit = true;
+			});
+		}
+};
+cart.city = function(){
+	var city = jQuery('#city'),
+		city_id = city.val(),
+		devChooseBlock = $('#delivery-choose');
+		deliveryId = this.delivery.deliveryId.getArrayCity();
+		cart.viewField.delivery(cart.delivery.deliveryId.getInput(), cart.arrCompare(city_id, deliveryId), 'delivery-choose');
+				
+		if (city_id == "") devChooseBlock.hide(); else devChooseBlock.show();
+		
+	city.change(function(){
+		var _this = jQuery(this);
+		$('.other-field-address').hide();
+		$('#payment-choose .control-group').hide();
+		$('#new-address').hide();
+		if (_this.val() == "") devChooseBlock.hide(); else devChooseBlock.show();
+		cart.viewField.delivery(cart.delivery.deliveryId.getInput(), cart.arrCompare(_this.val(), deliveryId), 'delivery-choose');
+	});
+};
+
+(function($){
+	$(function(){
+		cart.init();
+	});
+ })(jQuery);

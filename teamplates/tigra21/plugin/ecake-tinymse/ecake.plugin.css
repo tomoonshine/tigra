@@ -1,0 +1,84 @@
+
+.ui-accordion .ui-accordion-content {padding: 0;border-top: 0;margin: 0;position: relative;top: auto;overflow: visible;}
+.ui-corner-all,
+.ui-corner-top,
+.ui-corner-bottom {border-radius: 0;-webkit-border-radius: 0;-moz-border-radius: 0;}
+.ui-widget-content {background: none;border: none;}
+.ui-accordion .ui-accordion-header {margin-top: 0;}
+.ui-accordion .ui-icon {display: none;}
+
+.accordion > .item {padding-bottom: 9px;padding-top: 3px;padding-left: 22px;font-size: 12px;border-bottom: 1px solid #e4e4e4;font-family: 'Arial', sans-serif;}
+.accordion.customers  > .item {}
+.accordion.customers  > .item:hover {background: #eeeeee;}
+.accordion.customers  > .item:hover .title > a {color: #ff3600;}
+.accordion.customers  > .item .title {width: 100%;}
+.accordion.customers  > .item .title:before, .accordion.customers  > .item .title:after {content: "";display: table;}
+.accordion.customers  > .item .title:after {clear: both;}
+.accordion.customers  > .item .title {*zoom: 1;}
+.accordion.customers  > .item .title > a {float: left;margin-bottom: .3em; }
+.accordion.customers  > .item .title > ul.tags {float: none;}
+.accordion.customers  > .item .title > ul.tags  > .item {float: right;}
+.accordion.customers .tags {margin-top: -2px;padding-bottom: 0;float: right;}
+.accordion.customers  > .item .tags a {color: #999; }
+.accordion.customers  > .item .tags a:hover {color: #FFFFFF; }
+.accordion  > .item:last-child {border-bottom: 0;}
+.accordion  > .item .title {font-weight: 600;width: 530px;margin-left: -24px;padding-left: 24px;line-height: 140%;background: url('../tigra21-tinymse/img/accordion-arrow.png') 9px 4px no-repeat;border: none;cursor: pointer;}
+.accordion  > .item .title:hover {color: #ff3600;}
+.accordion  > .item .title.ui-state-active,
+.accordion  > .item .title.active {background-position: 9px -96px; }
+.accordion  > .item .title a {color: inherit;text-decoration: none; }
+.accordion  > .item .title a:hover {color: #ff3600;}
+.accordion  > .item .text {color: #666;height: auto;}
+.accordion  > .item .text p {padding-top: 20px;line-height: 140%;width: 530px;}
+.accordion.customers .item.text {line-height: 140%;color: #666;}
+
+.wrapper-easy-slider {margin-bottom: 34px;position: relative;}
+.slider {width: auto;position: relative;height: auto;margin: 0 auto;}
+.wrapper-easy-slider .easy-slider-control {overflow: hidden;padding: 10px;text-align: center;}
+.wrapper-easy-slider .easy-slider-control a {display: inline-block;margin: 0 2.5px;}
+.wrapper-easy-slider .easy-slider-control a,
+.slider .prev,
+.slider .next {font-family: FontAwesome;font-style: normal;font-weight: normal;line-height: 1;-webkit-font-smoothing: antialiased;-moz-osx-font-smoothing: grayscale;cursor: pointer;}
+.wrapper-easy-slider .easy-slider-control a:before {-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box;content: "\f10c";}
+.wrapper-easy-slider .easy-slider-control a.active:before {content: "\f111";}
+
+.slider  > .item {display: none;position: absolute;top: 0;left: 0;z-index: 8;}
+.slider  > .item.active {}
+.slider  > .item,
+.slider  > .item .wrapper-text {overflow: hidden;width: 100%;}
+.slider  > .item .wrapper-text {width: 100%;position: relative;}
+.slider  > .item img {border: none;margin-left: 0;margin-top: 0; width:100%;height:auto}
+.slider  > .item .image-slider {line-height: 0;background: url('../tigra21-tinymse/img/loader.gif') 50% 50% no-repeat;}
+.slider  > .item .text {position: absolute;left: 0px;bottom: 0px;color: #fff;width: 100%;z-index: 9;padding: 5px 10px;background: rgba(0, 0, 0, 0.6);-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box;}
+.slider .prev,
+.slider .next {display: block;overflow: hidden;position: absolute;height: 100%;top: 0;width: 40%;z-index: 9;font-size: 40px;}
+.slider .prev:before,
+.slider .next:before {position: absolute;top: 45%;}
+
+.slider .prev {left: 0;text-align: left;}
+.slider .next {right: 0;text-align: right;}
+.slider .prev:before {content: "\f104";left: 10px;}
+.slider .next:before {content: "\f105";right: 10px;}
+
+.slider .minigal-nav {margin-left: 50%;margin-top: 0;padding-top: 21px;position: relative;z-index: 9;}
+
+#main #page div.center div.content ul {margin-left: 50%;margin-top: 0;}
+#main #page div.center div.content ul li {list-style: none;margin-left: 0;padding: 0;}
+
+.minigal-nav, .miniprod-nav {padding: 0;margin: 0;height: 22px;margin-bottom: 18px;margin-top: 8px;list-style: none;}
+.minigal-nav li, .miniprod-nav li {float: left;height: 22px;line-height: 22px;vertical-align: middle; }
+.minigal-nav li.prev, .minigal-nav li.next {background: url('../tigra21-tinymse/img/mini-gal-nav.png') no-repeat;width: 25px;cursor: pointer;-moz-user-select: none;-khtml-user-select: none;user-select: none;-webkit-user-select: none; }
+.minigal-nav li.counter, .miniprod-nav li.counter {width: 60px;text-align: center;}
+.minigal-nav li.next, .miniprod-nav li.next {background-position: -25px 0;}
+
+
+@media only screen and (max-width: 767px){
+	.accordion  > .item .title {width: auto;}
+	.accordion  > .item .text p {width: auto;}
+	.wrapper-easy-slider {margin: 0 -50px 15px;}
+	.slider .prev,
+	.slider .next {font-size: 20px;}
+	.slider > .item .text {font-size: 11px;padding: 5px;}
+	.wrapper-easy-slider .easy-slider-control {padding: 5px;}
+	.wrapper-easy-slider .easy-slider-control a {font-size: 10px;}
+}

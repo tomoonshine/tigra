@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selection>
+    <target result="objects">
+        <type id="{1}" />
+    </target>
+    <sort order="{3}">{2}</sort>
+</selection>
