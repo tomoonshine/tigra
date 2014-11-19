@@ -92,6 +92,8 @@ class data_custom extends def_module {
 		$goods = new selector('objects');
 		// задаються типы объектов для поиска
 		foreach($categories as $cat) $goods->types('object-type')->id($cat);
+		// не нужны объекты без имён
+		$goods->where('name')->isnotnull(false); 
 		// количество элементов для отбора
 		$goods->limit(0,$amount);
 		// сортировочка в случайном порядке
