@@ -6,6 +6,11 @@
 	<xsl:include href="forget.xsl" />
 	<xsl:include href="restore.xsl" />
 	
+	<!-- шаблоны для продавцов -->
+	<xsl:include href="seller_registration.xsl" />
+	<xsl:include href="seller_settings.xsl" />
+	
+	
 	<xsl:template match="result[@method='electee_item_view']" mode="main_template">
 		<div class="container">
 			<div class="row">

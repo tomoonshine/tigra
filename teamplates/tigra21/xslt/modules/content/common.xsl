@@ -37,9 +37,11 @@
 						<div class="span3">
 							
 							
-							<!-- Categories widget -->
-							<xsl:apply-templates select="document('udata://catalog/getCategoryList//36/100/1')/udata" mode="left-column-main" />
-							<xsl:apply-templates select="document('udata://data/getSubCategory/199')/udata" mode="left-column-main" />
+							<!-- Категории товаров -->
+							<!-- старый шаблон категорий -->
+							<!-- <xsl:apply-templates select="document('udata://catalog/getCategoryList//36/100/1')/udata" mode="left-column-main" /> -->
+							<!-- новый шаблон категорий -->
+							<xsl:apply-templates select="document('udata://data/getSubCategory/240')/udata" mode="left-column-main" />
 							
 							
 							<!-- <xsl:apply-templates select="document('usel://getObject/?name_property=best_offers&amp;limit=3')/udata" mode="widget-category">
@@ -91,8 +93,14 @@
 							
 
 							<!-- вывод товаров на главной странице -->
-							<div id="query"></div>
-							<xsl:apply-templates select="document('usel://getObject/?name_property=best_offers&amp;limit=12')/udata" mode="special-offers" />
+							
+							<div id="query"></div> <!-- это надо для фотографий чтобы увеличивались -->
+							
+							<!-- старый шаблон вывода товаров -->
+							<!-- <xsl:apply-templates select="document('usel://getObject/?name_property=best_offers&amp;limit=12')/udata" mode="special-offers" /> -->
+							
+							<!-- наша новая выборка из магазинов random-->
+							<xsl:apply-templates select="document('udata://data/getProducts/240/10')/udata" mode="select_on_main_page" />
 
 							<!-- Контент -->
 							<xsl:value-of select=".//property[@name = 'content']/value" disable-output-escaping="yes" />

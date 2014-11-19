@@ -5,4 +5,5 @@
 	<xsl:include href="properties.xsl" />
 	<xsl:include href="common-edit-form.xsl" />
 	<xsl:include href="rss.xsl" />
+	<xsl:include href="getProducts.xsl" />
 </xsl:stylesheet>
