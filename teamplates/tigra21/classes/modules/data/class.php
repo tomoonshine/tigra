@@ -67,11 +67,6 @@ class data_custom extends def_module {
 		
 		return $this->parseTemplate('', $block_arr, null);
 
-			// echo "<br/>ID: " . $objID;
-			// echo "<br/>Имя: " . $obj->getName();		
-		// echo "<br/>массив потомков<br/>";
-		// var_dump($objChld);
-		
 		// echo "<br/>end test";
 		
 		return;
@@ -83,34 +78,82 @@ class data_custom extends def_module {
 	*/
 	public function getProducts($categoryID=NULL, $amount=0) {
 		
-		echo "<br/>begin getProducts";
+		//echo "<br/>begin getProducts";
 		
 		if (!$categoryID) return;
 		if ($amount == 0) return;
 		
 		// массив категорий по каторым нужно сделать отбор
 		$categories = array($categoryID);
+		// получаем все подкатегории
+		$categories = array_merge($categories, $this->getChildren($categoryID));
+		
+		// Нуно сделать выборку элементов
+		$goods = new selector('objects');
+		// задаються типы объектов для поиска
+		foreach($categories as $cat) $goods->types('object-type')->id($cat);
+		// количество элементов для отбора
+		$goods->limit(0,$amount);
+		// сортировочка в случайном порядке
+		$goods->order('rand');
+		
+		// будем работать с хиерархией
+		$hierarchy = umiHierarchy::getInstance();
+		// на всякий случай вдруг понядобиться домен
+		//$domainsCollection = domainsCollection::getInstance();
+		// Переменный для формирования выходной структуры xml
+		$block_arr = Array();
+		$lines = Array();
+		$length = 0;
+		foreach($goods as $obj) {
+			// полйчить все страницы объектом данных для которых являеться $obj
+			$pageId = $hierarchy->getObjectInstances($obj->id, true);
+			$page = $hierarchy->getElement($pageId[0]);
+			$line_arr = array();
+			
+			$line_arr['attribute:pageId'] = $page->id;
+			$line_arr['attribute:object-id'] = $obj->id;
+			$line_arr['attribute:name'] = $obj->name;
+			$line_arr['attribute:h1'] =  $page->h1;
+			$line_arr['attribute:price'] = $page->price;
+			// $line_arr['attribute:domain'] = $domainsCollection->getDomain($page->getDomainId())->getHost();
+			$line_arr['attribute:link'] = $page->link;	
+			// если имеються картинки то добавляем первую из всех
+			$jsonFILE = $page->tigra21_image_gallery;
+			$jsonFILE = json_decode($jsonFILE, true);
+			if(!empty($jsonFILE)) {
+				$line_arr['attribute:image']= $jsonFILE['0']['src'];
+			}
+		
+			$lines[] = $line_arr;
+			$length++;
+		}
+
+		if ($length != 0) $block_arr['subnodes:items'] = $lines;
+		$block_arr['total'] = $length;
+		
+		return $this->parseTemplate('', $block_arr, null);
+		
+		//echo "<br/>end getProducts";
+	}
+
+	/*
+		Функция рекурсивного перебора потомков $objID в umiObjectTypesCollection
+	*/
+	public function getChildren($objID) {
 		
 		// получим список дочерних объектов
 		$typesCollection = umiObjectTypesCollection::getInstance();
-		$objChld = $typesCollection->getSubTypesList($categoryID);
+		$objChldren = $typesCollection->getSubTypesList($objID);
 		
-		foreach($objChld as $objID){
-			getChildren($objID)
-			$obj = $typesCollection->getType($objID);
-
+		// поиск потомков $objID все потомки со своими потомкамиесли они существуют записываються 
+		// в массив $array и возвращаються функцией
+		$array = array();
+		foreach($objChldren as $objChild){
+			$array[] = $objChild;
+			$array = array_merge($array,$this->getChildren($objChild));
 		}
-		
-		echo "<br/>end getProducts";
-	}
-	
-	public function getChildren($objID) {
-		$typesCollection = umiObjectTypesCollection::getInstance();
-		$objChld = $typesCollection->getSubTypesList($objID);
-		foreach($objChld as $objID){
-			getChildren($objID);
-			echo "<br/> " . $objID;
-		}
+		return $array;
 	}
 	
 	/*
@@ -120,8 +163,6 @@ class data_custom extends def_module {
 	*/
 	public function addNewShop($name=NULL){
 	
-		$collection = domainsCollection::getInstance(); 
-		
 		if (!$name)	$name = getRequest('shopName');
 		
 		// Страница для вывода в случае ошибки
@@ -129,6 +170,7 @@ class data_custom extends def_module {
 		$this->errorSetErrorPage($refererUrl);
 		
 		// Проверка на существование домена в системе с таким же именем
+		$collection = domainsCollection::getInstance(); 
 		$domains = $collection->getList();
 		foreach ($domains as $domain) {
 			$host = $domain->getHost();
@@ -157,7 +199,7 @@ class data_custom extends def_module {
 		// добавление домена
 		// язык в системе по умолчанию, нужен при добавлении нового домена
 		$defLangId = $collection->getDefaultDomain()->getDefaultLangId();
-		// а ну-ка приятель добавька новый домен
+		// а ну-ка добавь новый домен
 		$newDomainId = $collection->addDomain($name.".tigra21.ru", $defLangId);
 		if($newDomainId === false) {
 			$this->errorAddErrors('Неудалось создать магазин ошибка с доменом. Попробуйте позднее или обратитесь к администратору сайта.');
@@ -175,7 +217,7 @@ class data_custom extends def_module {
 		// добавляем шаблон к новому домену
 		$newTmplId = $collection->addTemplate("default.xsl","Основной",$newDomainId,$defLangId,true);
 		// настраиваем имя шаблона в templates
-		$collection->getTemplate($newTmplId )->setName("ecake");
+		$collection->getTemplate($newTmplId )->setName("tigra21");
 		
 		// добавление главной страницы и каталога
 		$hierarchy = umiHierarchy::getInstance(); 
@@ -219,14 +261,60 @@ class data_custom extends def_module {
 	}
 	
 	
-
-	
-	
-	public function setActive_mod() {
-
+	public function test() {
+		echo "<br/>begin test";
+		
+		// Проверка на существование домена в системе с таким же именем
+		$collection = domainsCollection::getInstance(); 
+		$domains = $collection->getList();
+		$domainID = $collection->getDomainId('test.tigra21.ru');
+		//echo "<br/>domain " . $domainID;
+		$domain =  $collection->getDomain($domainID);
+		
+		
+		
+		$typesCollection = umiObjectTypesCollection::getInstance();
+		$objType = $typesCollection->getType(210);
+		
+		
+		// $goods = new selector('objects');
+		// $goods->types('object-type')->id(210);
+		// $goods->types('object-type')->id(211);
+		
+		// $goods = new selector('pages');
+		// $goods->types('hierarchy-type')->name('catalog', 'object');
+		// $goods->where('object-id')->equals('211');
+		//$goods->types('elementTypeId')->id(210);
+		//$goods->types('object-type')->id(211);
+		//$goods->order('rand');
+		
+		
+		// foreach($goods as $obj) {
+			// echo "<br/> ID: " . $obj->id;
+			// echo " | name: " .  $obj->name;
+			// echo " | link: " .  $obj->link;
+		// }
+		
+		// echo "<br/>Total goods:{$goods->length}";
+		$hierarchy = umiHierarchy::getInstance();
+		$objects = $hierarchy->getObjectInstances('10362', true);
+		echo "<br/> page id: ";
+		echo $objects[0];
+		
+		// $pages = new selector('pages');
+		// $pages->types('object-type')->id(210);
+		// $pages->types('hierarchy-type')->name('catalog', 'object');
+		// //$pages->where('price')->eqless(500);
+		// foreach($pages as $page) {
+			// echo "<br/><a href=\"{$page->link}\">{$page->name}</a>";
+			// echo " | " . $page->getObjectTypeId();
+		// }
+		// echo "Pages found: {$pages->length}";
+		
+		echo "<br/>end test";
 	}
 	
-	public function test() {
+	public function errortest() {
 		
 		// echo "<br/>begin 1";
 
