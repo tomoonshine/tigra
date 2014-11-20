@@ -102,7 +102,7 @@ class data_custom extends def_module {
 		// будем работать с хиерархией
 		$hierarchy = umiHierarchy::getInstance();
 		// на всякий случай вдруг понядобиться домен
-		//$domainsCollection = domainsCollection::getInstance();
+		$domainsCollection = domainsCollection::getInstance();
 		// Переменный для формирования выходной структуры xml
 		$block_arr = Array();
 		$lines = Array();
@@ -118,7 +118,7 @@ class data_custom extends def_module {
 			$line_arr['attribute:name'] = $obj->name;
 			$line_arr['attribute:h1'] =  $page->h1;
 			$line_arr['attribute:price'] = $page->price;
-			// $line_arr['attribute:domain'] = $domainsCollection->getDomain($page->getDomainId())->getHost();
+			$line_arr['attribute:domain'] = $domainsCollection->getDomain($page->getDomainId())->getHost();
 			$line_arr['attribute:link'] = $page->link;	
 			// если имеються картинки то добавляем первую из всех
 			$jsonFILE = $page->tigra21_image_gallery;
@@ -157,6 +157,108 @@ class data_custom extends def_module {
 		}
 		return $array;
 	}
+	/*
+		
+		Вывод товаров в количестве &amount рандом указанной категории и входящих в нее категорий
+		в формате html требуется htmlDecode для обработки после получения ajax запросом
+	
+	*/
+	public function getSubCategoryCatalog($categoryID=NULL, $amount=0) {
+		
+		// если нихрена не задано то ну его нафиг
+		if (!$categoryID) return;
+		if ($amount == 0) return;
+
+		// массив категорий по каторым нужно сделать отбор
+		$categories = array($categoryID);
+		// получаем все подкатегории
+		$categories = array_merge($categories, $this->getChildren($categoryID));
+		
+		// Нуно сделать выборку элементов
+		$goods = new selector('objects');
+		// задаються типы объектов для поиска
+		foreach($categories as $cat) $goods->types('object-type')->id($cat);
+		// не нужны объекты без имён
+		$goods->where('name')->isnotnull(false); 
+		// количество элементов для отбора
+		$goods->limit(0,$amount);
+		// сортировочка в случайном порядке
+		$goods->order('rand');
+		
+		// будем работать с хиерархией
+		$hierarchy = umiHierarchy::getInstance();
+		// на всякий случай вдруг понядобиться домен
+		$domainsCollection = domainsCollection::getInstance();
+		// Переменный для формирования выходной структуры xml
+		$block_arr = Array();
+		$htmlcode = ' ';
+		$length = 0;
+		foreach($goods as $obj) {
+			// полйчить все страницы объектом данных для которых являеться $obj
+			$pageId = $hierarchy->getObjectInstances($obj->id, true);
+			$page = $hierarchy->getElement($pageId[0]);
+			
+			// если имеються картинки то добавляем первую из всех
+			$src = ' ';
+			$jsonFILE = $page->tigra21_image_gallery;
+			$jsonFILE = json_decode($jsonFILE, true);
+			if(!empty($jsonFILE)) {
+				$src= $jsonFILE['0']['src'];
+			}
+			$host = $domainsCollection->getDomain($page->getDomainId())->getHost();
+			// структура html
+			$htmlcode =	$htmlcode . '<li umi:element-id="' . $page->id . '" umi:region="row" class="standard">'
+							. '<div class="image">'
+								. '<a title="' . $obj->name .'" umi:element-id="' . $page->id . '" class="image-link" href="' .  $page->link . '">'
+									. '<div style="width:170px; height: 170px" class="image_crop_block">'
+										. '<img width="170" title="' . $obj->name . '" alt="' . $obj->name . '" class="primary" src="' . $src .'"></img>'
+									. '</div>'
+								. '</a>'
+								. '</div>'
+								. '<div class="title">'
+									. '<a title="' . $host . '" href="'. $host . '">'
+										. '<h3>'.$host.'</h3>'
+									. '</a>'
+									. '<a title="товар 2" href="'. $page->link .'">'
+										. '<h3 umi:field-name="name" umi:element-id="'. $page->id.'" class="u-eip-edit-box" title="Нажмите Ctrl+левая кнопка мыши, чтобы перейти по ссылке.">товар 2</h3>'
+										. '<div class="prices">'
+											. '<span class="price">'.$page->price.'</span> руб'
+										. '</div>'
+										. '</a>'
+									. '<div class="btn_line add_from_list btn_line_">'
+										. '<i class="fa fa-spinner fa-spin"></i>'
+									. '</div>'
+									. '<div style="margin:20px"></div>'
+								.' </div>'
+						. '</li>';
+			
+			// $line_arr = array();
+			
+			// $line_arr['attribute:pageId'] = $page->id;
+			// $line_arr['attribute:object-id'] = $obj->id;
+			// $line_arr['attribute:name'] = $obj->name;
+			// $line_arr['attribute:h1'] =  $page->h1;
+			// $line_arr['attribute:price'] = $page->price;
+			// $line_arr['attribute:domain'] = $domainsCollection->getDomain($page->getDomainId())->getHost();
+			// $line_arr['attribute:link'] = $page->link;	
+			// // если имеються картинки то добавляем первую из всех
+			// $jsonFILE = $page->tigra21_image_gallery;
+			// $jsonFILE = json_decode($jsonFILE, true);
+			// if(!empty($jsonFILE)) {
+				// $line_arr['attribute:image']= $jsonFILE['0']['src'];
+			// }
+		
+			// $lines[] = $line_arr;
+			$length++;
+		}
+
+		// if ($length != 0) $block_arr['subnodes:items'] = $lines;
+		$block_arr['total'] = $length;
+		$block_arr['htmlcode'] = $htmlcode . '<div class="clear"></div>';
+		return $this->parseTemplate('', $block_arr, null);
+	}
+	
+	
 	
 	/*
 		функция добавляет новый домен, настраивает ему шаблон, и добавляет

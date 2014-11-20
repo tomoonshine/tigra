@@ -6,4 +6,6 @@
 	<xsl:include href="common-edit-form.xsl" />
 	<xsl:include href="rss.xsl" />
 	<xsl:include href="getProducts.xsl" />
+	<xsl:include href="getSubCategory.xsl" />
+	
 </xsl:stylesheet>
