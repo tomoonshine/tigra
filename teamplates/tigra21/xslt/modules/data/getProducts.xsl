@@ -29,9 +29,9 @@
 				</a>
 			</div>
 			<div class="title">
-				<a href="http://{@domain}" title="{@domain}">
+				<a href="http://{@domain}" title="{@shopName}">
 					<h3>
-						<xsl:value-of select="@domain" />
+						<xsl:value-of select="@shopName" />
 					</h3>
 				</a>
 				<a href="{@link}" title="{@name}">

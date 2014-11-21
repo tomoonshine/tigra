@@ -6,35 +6,6 @@
 
 	<!-- шаблон выводит категории товаров на главной странице-->
 	<xsl:template match="udata[@method = 'getSubCategory']" mode="left-column-main">
-	
-			<script>
-			var htmlDecode = function (value) { 
-				return $('<div/>').html(value).text(); 
-			} 
-				function getCatalog(category,amount) {
-					jQuery.ajax({
-						url     : 'udata/data/getSubCategoryCatalog/'+category+'/'+amount,
-						type    : 'GET',
-						async	: false,
-						dataType: 'xml',
-						success  : outCatalog
-					});
-				}
-				
-				function outCatalog(data) {
-					var htmlcode = data.getElementsByTagName('htmlcode')[0].innerHTML;
-					document.getElementById('catalog').innerHTML = htmlDecode(htmlcode);
-				}
-				
-				var oldActive_link;
-				function changeActive(elm) {
-					if(oldActive_link) oldActive_link.className = 'title';
-					elm.className = 'active_link';
-					oldActive_link = elm;
-				}
-			</script>
-
-		
 		<div class="widget Categories is-default hidden-phone">
 			<h3 class="widget-title widget-title ">Каталог</h3>
 			<ul class="category-list secondary">

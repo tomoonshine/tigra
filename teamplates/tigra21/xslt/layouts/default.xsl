@@ -31,7 +31,7 @@
 				<link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet" />
 				<link href="{$template-resources}plugin/fotorama-4.5.1/fotorama.css" rel="stylesheet" />
 				<link rel="stylesheet" type="text/css" href="{$template-resources}js/fancybox/jquery.fancybox.css" />
-				<!-- <link rel="stylesheet" type="text/css" href="{$template-resources}plugin/tigra21-tinymse/tigra21.plugin.css" /> -->
+				<link rel="stylesheet" type="text/css" href="{$template-resources}plugin/tigra21-tinymse/tigra21.plugin.css" />
 				<!-- END CSS -->
 				
 				<xsl:value-of select="document('udata://system/includeQuickEditJs')/udata" disable-output-escaping="yes" />
@@ -40,6 +40,8 @@
 				    <script src="{$template-resources}js/admin/umi-eip.custom.js" type="text/javascript"></script>
 				    <script type="text/javascript" src="/styles/skins/mac/design/js/custom.events.upload-photo.js"></script>
 				</xsl:if>
+
+				
 			</head>
 			<body class="">
 				<xsl:if test="$settings_cart[@name='viewCart']='bottom'"><xsl:attribute name="class">basket_small_bottom</xsl:attribute></xsl:if>
@@ -123,8 +125,8 @@
 
 	<!-- контакты -->
 									<div class="span3">
-										<div class="phone-header">Чувашия, г. Чебоксары</div>
-										<div class="address">Чебоксарский Городской Портал...</div>
+										<div class="phone-header">Портал Магазинов Города</div>
+										<div class="address">РФ, Республика Чувашия, г. Чебоксары</div>
 									 </div>
 	<!-- поиск -->													
 									<div class="span7">
@@ -336,9 +338,14 @@
 				<script type="text/javascript" charset="utf-8" src="{$template-resources}s_js/__common.js"></script>
 				<script type="text/javascript" src="{$template-resources}js/libs/jquery.ui.touch-punch.min.js"></script>
 				<script type="text/javascript" src="{$template-resources}js/jquery.tigra21.js"></script>
+				
+				<!-- дбавленые скрипты -->
+				<script type="text/javascript" src="{$template-resources}js/additions/additions.js"></script>
+				
 				<!-- <script type="text/javascript" src="{$template-resources}plugin/tigra21-tinymse/jquery.tigra21.plugin.js"></script> -->
 				<!-- END JAVASCRIPTS -->
 				<xsl:value-of select="$settings_site[@name='settings_metric']/text()" disable-output-escaping="yes" />
+				
 			</body>
 		</html>
 	</xsl:template>

@@ -10,6 +10,10 @@
 General Styling
 Includes: links, lists, buttons and all consistant elements
 ---------------------------- */
+ @import url("additions.css");
+
+
+
 ::-moz-selection {
   background: #feffc3;
   color: #474948;

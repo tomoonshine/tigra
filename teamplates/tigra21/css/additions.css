@@ -1,0 +1,10 @@
+
+.waitCatalog {
+	/* background-color: black; */
+	
+	background-image: url(../../tigra21/img/loader.gif);
+	width: 13px;
+	height: 13px;
+	background-size:contain;
+;
+}

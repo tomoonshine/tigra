@@ -112,13 +112,17 @@ class data_custom extends def_module {
 			$pageId = $hierarchy->getObjectInstances($obj->id, true);
 			$page = $hierarchy->getElement($pageId[0]);
 			$line_arr = array();
+			$host = $domainsCollection->getDomain($page->getDomainId())->getHost();
+			$mainPageId = $hierarchy->getIdByPath($host.'/main/');
+			$mainPage = $hierarchy->getElement($mainPageId);
 			
 			$line_arr['attribute:pageId'] = $page->id;
 			$line_arr['attribute:object-id'] = $obj->id;
 			$line_arr['attribute:name'] = $obj->name;
 			$line_arr['attribute:h1'] =  $page->h1;
 			$line_arr['attribute:price'] = $page->price;
-			$line_arr['attribute:domain'] = $domainsCollection->getDomain($page->getDomainId())->getHost();
+			$line_arr['attribute:domain'] = $host;
+			$line_arr['attribute:shopName'] = $mainPage->nazvanie_magazina;
 			$line_arr['attribute:link'] = $page->link;	
 			// если имеються картинки то добавляем первую из всех
 			$jsonFILE = $page->tigra21_image_gallery;
@@ -206,6 +210,9 @@ class data_custom extends def_module {
 				$src= $jsonFILE['0']['src'];
 			}
 			$host = $domainsCollection->getDomain($page->getDomainId())->getHost();
+			$mainPageId = $hierarchy->getIdByPath($host.'/main/');
+			$mainPage = $hierarchy->getElement($mainPageId);
+			
 			// структура html
 			$htmlcode =	$htmlcode . '<li umi:element-id="' . $page->id . '" umi:region="row" class="standard">'
 							. '<div class="image">'
@@ -216,8 +223,8 @@ class data_custom extends def_module {
 								. '</a>'
 								. '</div>'
 								. '<div class="title">'
-									. '<a title="' . $host . '" href="'. $host . '">'
-										. '<h3>'.$host.'</h3>'
+									. '<a title="' .$mainPage->nazvanie_magazina . '" href="http://'. $host . '">'
+										. '<h3>'.$mainPage->nazvanie_magazina.'</h3>'
 									. '</a>'
 									. '<a title="товар 2" href="'. $page->link .'">'
 										. '<h3 umi:field-name="name" umi:element-id="'. $page->id.'" class="u-eip-edit-box" title="Нажмите Ctrl+левая кнопка мыши, чтобы перейти по ссылке.">товар 2</h3>'
@@ -232,23 +239,6 @@ class data_custom extends def_module {
 								.' </div>'
 						. '</li>';
 			
-			// $line_arr = array();
-			
-			// $line_arr['attribute:pageId'] = $page->id;
-			// $line_arr['attribute:object-id'] = $obj->id;
-			// $line_arr['attribute:name'] = $obj->name;
-			// $line_arr['attribute:h1'] =  $page->h1;
-			// $line_arr['attribute:price'] = $page->price;
-			// $line_arr['attribute:domain'] = $domainsCollection->getDomain($page->getDomainId())->getHost();
-			// $line_arr['attribute:link'] = $page->link;	
-			// // если имеються картинки то добавляем первую из всех
-			// $jsonFILE = $page->tigra21_image_gallery;
-			// $jsonFILE = json_decode($jsonFILE, true);
-			// if(!empty($jsonFILE)) {
-				// $line_arr['attribute:image']= $jsonFILE['0']['src'];
-			// }
-		
-			// $lines[] = $line_arr;
 			$length++;
 		}
 
@@ -265,9 +255,9 @@ class data_custom extends def_module {
 		главную страницу 
 		каталог товаров
 	*/
-	public function addNewShop($name=NULL){
+	public function addNewShop($domenName=NULL, $name){
 	
-		if (!$name)	$name = getRequest('shopName');
+		if (!$domenName) $domenName = getRequest('shopName');
 		
 		// Страница для вывода в случае ошибки
 		$refererUrl = getServer('HTTP_REFERER');
@@ -278,7 +268,7 @@ class data_custom extends def_module {
 		$domains = $collection->getList();
 		foreach ($domains as $domain) {
 			$host = $domain->getHost();
-			if($name.".tigra21.ru" == $host)
+			if($domenName.".tigra21.ru" == $host)
 			{
 				// echo "<br/>домен существует ";
 				$this->errorAddErrors('Магазин с таким названием уже есть');
@@ -304,7 +294,7 @@ class data_custom extends def_module {
 		// язык в системе по умолчанию, нужен при добавлении нового домена
 		$defLangId = $collection->getDefaultDomain()->getDefaultLangId();
 		// а ну-ка добавь новый домен
-		$newDomainId = $collection->addDomain($name.".tigra21.ru", $defLangId);
+		$newDomainId = $collection->addDomain($domenName.".tigra21.ru", $defLangId);
 		if($newDomainId === false) {
 			$this->errorAddErrors('Неудалось создать магазин ошибка с доменом. Попробуйте позднее или обратитесь к администратору сайта.');
 			$this->errorThrow('public');
@@ -314,7 +304,7 @@ class data_custom extends def_module {
 
 		// Записывает домен к пользователю
 		$user->setValue('shopid', $newDomainId);
-		$user->setValue('magazin', $name);
+		$user->setValue('magazin', $domenName);
 
 		// настройка шаблона
 		$collection = templatescollection::getInstance(); 
@@ -326,8 +316,8 @@ class data_custom extends def_module {
 		// добавление главной страницы и каталога
 		$hierarchy = umiHierarchy::getInstance(); 
 		
-		// добавить Главную страницу тип страницы 55
-		$newPageId = $hierarchy->addElement(0,55,"Главная","main",55,$newDomainId,$defLangId,$newTmplId);
+		// добавить Главную страницу тип страницы 1058 Главная страница магазина
+		$newPageId = $hierarchy->addElement(0,1058,"Главная","main",1058,$newDomainId,$defLangId,$newTmplId);
 		if($newPageId === false) {
 			$this->errorAddErrors('Не удалось создать главную страницу. Обратитесь к администратору сайта.');
 			$this->errorThrow('public');
@@ -345,6 +335,11 @@ class data_custom extends def_module {
 		$page = $hierarchy->getElement($newPageId); 
 		$page->setIsActive(true);
 		$page->setIsDefault(true);
+		// запишем название магазина
+		$page->nazvanie_magazina = $name;
+		// запишымшымшым идентификатор пользователя
+		$page->polzovatel = $userId;
+		
 		
 		// добавить Каталог тип 82
 		$newPageId = $hierarchy->addElement(0,82,"Товары","goods",82,$newDomainId,$defLangId,$newTmplId);
