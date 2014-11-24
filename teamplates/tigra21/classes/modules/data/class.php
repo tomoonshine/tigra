@@ -37,6 +37,7 @@ class data_custom extends def_module {
 	
 	/*
 		возвращает список дочерних типов, детей $parent
+		Для типов данных
 		
 	*/
 	public function getSubCategory($parent=NULL) {
@@ -71,6 +72,176 @@ class data_custom extends def_module {
 		
 		return;
 	}
+	
+	/*
+		Вывод для доменна списка категорий товаров.
+		Строется на основе всех товаров лежащих в каталоге goods
+		уровней должно быть не более 10
+		в формате html требуется htmlDecode для обработки после получения ajax запросом
+	*/
+	public function GetMagazCatalog($domain = NULL) {
+		// если домен не задан то выход
+		if(!$domain) return;
+		
+		// получаем все товары из каталога goods
+		$pages = new selector('pages');
+		$pages->where('hierarchy')->page($domain.'/goods/')->childs(1);
+		
+		// id корня каталога 240 Категории товаров
+		// начальный элемент иерархии предок всех задан в сиситеме, шаблоны данных, объекты каталога
+		$rootId = 240;
+		// корневой элемент структуры каталогов
+		// используется ассоциативный массив
+		/*
+			$root = {
+						"name" = "название категории",
+						'id' = "идентификатор",
+						'chld' = "указатель на массив таких структур, по иерархии они на 1 уровень ниже"
+					}
+			$root['chld'] = &$array {
+										{
+											"name" = "название категории",
+											'id' = "идентификатор",
+											'chld' = "указатель на массив таких структур, по иерархии они на 1 уровень ниже"
+										},
+										{
+											"name" = "название категории",
+											'id' = "идентификатор",
+											'chld' = "указатель на массив таких структур, по иерархии они на 1 уровень ниже"
+										}
+										
+										и т.д
+									}
+		*/
+		$root = array("name"=>"Категории товаров", "id"=>$rootId , "chld");
+			
+		foreach($pages as $page) {
+			$this->getPageCatalog(&$root, $page->getObjectTypeId());
+		}
+		// вывод иерархии в формате html 
+		/*
+			сокращённо примерно так
+			<ul>
+				<li> name </li>
+				<li> name </li>
+			</ul>
+		*/
+		$str = "";
+		if($root['chld']) {
+			//echo "<ul class='category-list secondary'>";
+			$str = $str . "<ul class='category-list secondary'>";
+				foreach($root['chld'] as $child) {
+//					echo '<a onclick=" " class="title" title="'. $child["name"]. '" >'.$child["name"].'<i class="fa fa-chevron-down"></i></a>';
+					$str = $str . '<li>';
+					// $str = $str . '<a onclick="changeActive(this);';
+					// $str = $str . 'getMagazCatalog('. $child['id'] . ',10,"' . 'domain' . '");"';
+					// $str = $str . 'class="title" >'
+					$str = $str . '<a onclick="changeActive(this);getMagazCatalog('.$child["id"].',10,'."'". $domain."'". ')" class="title" >';
+					$str = $str. $child["name"];
+					if($child['chld']) $str = $str .'<i class="fa fa-chevron-down"></i>';
+					$str = $str.'</a>';
+					$this->getListType($child, &$str, $domain);
+					$str = $str . '</li>';
+				}
+			//echo "</ul>";
+			$str = $str . "</ul>";
+		}
+		$block_arr = Array();
+		$block_arr['htmlcode'] = $str;
+		return $this->parseTemplate('', $block_arr, null);
+	}
+	/*
+		построение списка каталого в формате html tigra21.ru
+	*/
+	function getListType($parent, &$str, $domain) {
+			
+			if($parent['chld']) {
+				//echo '<ul class="sub-menu">';
+				$str = $str . '<ul class="sub-menu">';
+				foreach($parent['chld'] as $child) {
+					//echo '<a onclick=" " class="title" title="'. $child["name"]. '" >'.$child["name"].'<i class="fa fa-chevron-down"></i></a>';
+					$str = $str . '<li>';
+					$str = $str . '<a onclick="changeActive(this);getMagazCatalog('.$child["id"].',10,'."'". $domain."'". ')" class="title" >';
+					$str = $str .$child["name"];
+					if($child['chld']) $str = $str .'<i class="fa fa-chevron-down"></i>';
+					$str = $str.'</a>';
+					$this->getListType($child,&$str,$domain);
+					$str = $str . '</li>';
+				}
+				//echo '</ul>';
+				$str = $str . '</ul>';
+			}
+	}
+	
+	
+	
+	/*
+		Построение иерархии категорий для заданного типа объекта $curTypeId
+		$root используеться в качестве корня иерархии как начальный элемент
+	*/
+	public function getPageCatalog(&$root, $curTypeId) {
+			
+			$typesCollection = umiObjectTypesCollection::getInstance();
+			//$typeObj = $typesCollection->getType($typeId);
+			// массив предков элемента в иерархии шаблона данных
+			/*
+				строиться массив предков
+				$parents = {
+								{
+									"name" = "название категории",
+									'id' = "идентификатор",
+								},
+								{
+									"name" = "название категории",
+									'id' = "идентификатор",
+								}
+								
+								и т.д
+							}
+			*/
+			$parents = array();
+			// перебор и запись предков внуков должно быть не более 10
+			$i = 0;
+	   		while ($curTypeId != $root['id'] ) {
+				$typeObj = $typesCollection->getType($curTypeId);
+				$parents[$i]['id'] = $curTypeId;
+				$parents[$i]['name'] = $typeObj->getName();
+				//echo "<br/>". $typeObj->getName() . "</br>";
+				$curTypeId = $typeObj->getParentId();
+				$i++;
+				if ($i == 10) { echo "</br> break overflow "; return; }
+				
+			}
+			$i--;
+			$elm = &$root;
+			$flag = 0;
+			// записываем структуру иерархии начиная с детей $root далее детей детей $root
+			// если элемент присутствует в нашей иерархии то он не включаеться
+			for($i; $i >= 0 ; $i--) {
+				$chlds = &$elm['chld'];
+				$l = count($chlds); // длинна массива потомков
+				$flag = 0;
+				$j = 0;
+				// ищем в потомках ветвь нашего элемента
+				for($j; $j < $l; $j++) {
+					if ($chlds[$j]['id'] == $parents[$i]['id']) {
+						// если есть вхождение ветви то переключаемся на неё
+						$elm = &$chlds[$j];
+						// перейдём к следующей итерации
+						$flag = 1;
+						break;
+					}
+				}
+				if ($flag) continue;
+				// если нет то добавляем новою ветвь
+				$chlds[$j] = array('name'=>$parents[$i]['name'], 'id'=>$parents[$i]['id'], "chld");
+				// переключаемся на неё
+				$elm = &$chlds[$j];
+			}
+	}
+	
+	
+
 	
 	/* 
 		Вывод товаров указанной категории со всех магазинов
@@ -182,6 +353,7 @@ class data_custom extends def_module {
 		$goods = new selector('objects');
 		// задаються типы объектов для поиска
 		foreach($categories as $cat) $goods->types('object-type')->id($cat);
+		//
 		// не нужны объекты без имён
 		$goods->where('name')->isnotnull(false); 
 		// количество элементов для отбора
@@ -247,6 +419,106 @@ class data_custom extends def_module {
 		$block_arr['htmlcode'] = $htmlcode . '<div class="clear"></div>';
 		return $this->parseTemplate('', $block_arr, null);
 	}
+	
+	
+	
+	/*
+		Используеться для магазинов на поддоменах tigra21.ru (усовершенствованная
+		getSubCategoryCatalog)
+		Вывод товаров в количестве &amount рандом указанной категории и входящих в нее категорий
+		в формате html требуется htmlDecode для обработки после получения ajax запросом
+	
+	*/
+	public function getSubCategoryCatalogMagaz($categoryID=NULL, $amount=0, $domain = NULL) {
+		
+		// если нихрена не задано то ну его нафиг
+		if (!$categoryID) return;
+		if ($amount == 0) return;
+		if (!$domain) return;
+
+		
+		// массив категорий по каторым нужно сделать отбор
+		$categories = array($categoryID);
+		// получаем все подкатегории
+		$categories = array_merge($categories, $this->getChildren($categoryID));
+		
+		// Нуно сделать выборку элементов
+		$pages = new selector('pages');
+		//$pages->types('object-type')->id($categoryID);
+		foreach($categories as $cat) $pages->types('object-type')->id($cat);
+		$pages->types('hierarchy-type')->name('catalog', 'object');
+		$pages->where('hierarchy')->page($domain.'/goods/')->childs(1);
+	
+		// $goods = new selector('objects');
+		// задаються типы объектов для поиска
+	//	foreach($categories as $cat) $goods->types('object-type')->id($cat);
+		//
+		// не нужны объекты без имён
+		//$pages->where('name')->isnotnull(false); 
+		// количество элементов для отбора
+		$pages->limit(0,$amount);
+		// сортировочка в случайном порядке
+		$pages->order('rand');
+		
+		// будем работать с хиерархией
+		$hierarchy = umiHierarchy::getInstance();
+		// на всякий случай вдруг понядобиться домен
+		$domainsCollection = domainsCollection::getInstance();
+		// Переменный для формирования выходной структуры xml
+		$block_arr = Array();
+		$htmlcode = ' ';
+		$length = 0;
+		foreach($pages as $page) {
+			// полйчить все страницы объектом данных для которых являеться $obj
+			//$pageId = $hierarchy->getObjectInstances($obj->id, true);
+			//$page = $hierarchy->getElement($pageId[0]);
+			
+			// если имеються картинки то добавляем первую из всех
+			$src = ' ';
+			$jsonFILE = $page->tigra21_image_gallery;
+			$jsonFILE = json_decode($jsonFILE, true);
+			if(!empty($jsonFILE)) {
+				$src= $jsonFILE['0']['src'];
+			}
+			//$host = $domainsCollection->getDomain($page->getDomainId())->getHost();
+			$mainPageId = $hierarchy->getIdByPath($domain.'/main/');
+			$mainPage = $hierarchy->getElement($mainPageId);
+			
+			// структура html
+			$htmlcode =	$htmlcode . '<li umi:element-id="' . $page->id . '" umi:region="row" class="standard">'
+							. '<div class="image">'
+								. '<a title="' . $page->name .'" umi:element-id="' . $page->id . '" class="image-link" href="' .  $page->link . '">'
+									. '<div style="width:170px; height: 170px" class="image_crop_block">'
+										. '<img width="170" title="' . $page->name . '" alt="' . $page->name . '" class="primary" src="' . $src .'"></img>'
+									. '</div>'
+								. '</a>'
+								. '</div>'
+								. '<div class="title">'
+									. '<a title="' .$mainPage->nazvanie_magazina . '" href="http://'. $domain . '">'
+										. '<h3>'.$mainPage->nazvanie_magazina.'</h3>'
+									. '</a>'
+									. '<a title="товар 2" href="'. $page->link .'">'
+										. '<h3 umi:field-name="name" umi:element-id="'. $page->id.'" class="u-eip-edit-box" title="Нажмите Ctrl+левая кнопка мыши, чтобы перейти по ссылке.">товар 2</h3>'
+										. '<div class="prices">'
+											. '<span class="price">'.$page->price.'</span> руб'
+										. '</div>'
+										. '</a>'
+									. '<div class="btn_line add_from_list btn_line_">'
+										. '<i class="fa fa-spinner fa-spin"></i>'
+									. '</div>'
+									. '<div style="margin:20px"></div>'
+								.' </div>'
+						. '</li>';
+			
+			$length++;
+		}
+
+		// if ($length != 0) $block_arr['subnodes:items'] = $lines;
+		$block_arr['total'] = $length;
+		$block_arr['htmlcode'] = $htmlcode . '<div class="clear"></div>';
+		return $this->parseTemplate('', $block_arr, null);
+	}
+	
 	
 	
 	
@@ -360,55 +632,39 @@ class data_custom extends def_module {
 	}
 	
 	
-	public function test() {
+	public function test($categoryID=NULL, $amount=0, $domain) {
 		echo "<br/>begin test";
 		
-		// Проверка на существование домена в системе с таким же именем
-		$collection = domainsCollection::getInstance(); 
-		$domains = $collection->getList();
-		$domainID = $collection->getDomainId('test.tigra21.ru');
-		//echo "<br/>domain " . $domainID;
-		$domain =  $collection->getDomain($domainID);
-		
-		
-		
-		$typesCollection = umiObjectTypesCollection::getInstance();
-		$objType = $typesCollection->getType(210);
-		
-		
-		// $goods = new selector('objects');
-		// $goods->types('object-type')->id(210);
-		// $goods->types('object-type')->id(211);
-		
-		// $goods = new selector('pages');
-		// $goods->types('hierarchy-type')->name('catalog', 'object');
-		// $goods->where('object-id')->equals('211');
-		//$goods->types('elementTypeId')->id(210);
-		//$goods->types('object-type')->id(211);
-		//$goods->order('rand');
-		
-		
-		// foreach($goods as $obj) {
-			// echo "<br/> ID: " . $obj->id;
-			// echo " | name: " .  $obj->name;
-			// echo " | link: " .  $obj->link;
-		// }
-		
-		// echo "<br/>Total goods:{$goods->length}";
-		$hierarchy = umiHierarchy::getInstance();
-		$objects = $hierarchy->getObjectInstances('10362', true);
-		echo "<br/> page id: ";
-		echo $objects[0];
-		
 		// $pages = new selector('pages');
-		// $pages->types('object-type')->id(210);
+		// $pages->types('object-type')->id($categoryID);
 		// $pages->types('hierarchy-type')->name('catalog', 'object');
-		// //$pages->where('price')->eqless(500);
-		// foreach($pages as $page) {
-			// echo "<br/><a href=\"{$page->link}\">{$page->name}</a>";
-			// echo " | " . $page->getObjectTypeId();
-		// }
-		// echo "Pages found: {$pages->length}";
+		// $pages->where('hierarchy')->page($domain.'/goods/')->childs(1);
+		
+		
+		$categories = array($categoryID);
+		// получаем все подкатегории
+		$categories = array_merge($categories, $this->getChildren($categoryID));
+		
+		// Нуно сделать выборку элементов
+		$pages = new selector('pages');
+		//$pages->types('object-type')->id($categoryID);
+		foreach($categories as $cat) $pages->types('object-type')->id($cat);
+		$pages->types('hierarchy-type')->name('catalog', 'object');
+		$pages->where('hierarchy')->page($domain.'/goods/')->childs(1);
+	
+		// $goods = new selector('objects');
+		// задаються типы объектов для поиска
+	//	foreach($categories as $cat) $goods->types('object-type')->id($cat);
+		//
+		// не нужны объекты без имён
+		//$pages->where('name')->isnotnull(false); 
+		// количество элементов для отбора
+		$pages->limit(0,$amount);
+		// сортировочка в случайном порядке
+		$pages->order('rand');
+		
+		foreach($pages as $page)
+			echo "<a href=\"{$page->link}\">{$page->name}</a>\n";
 		
 		echo "<br/>end test";
 	}

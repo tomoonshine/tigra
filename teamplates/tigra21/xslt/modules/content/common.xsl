@@ -27,7 +27,7 @@
 	</xsl:template>
 
 	<!-- шаблон для главной -->
-	<xsl:template match="result[page/@is-default=1]" mode="main_template">
+	<xsl:template match="result[page/@is-default=1][@domain='tigra21.ru']" mode="main_template">
 		<!-- Home content -->
 		<section class="home">
 	                                                          
@@ -346,5 +346,7 @@
 	<!-- Модуль используеться для разработки -->
 	<xsl:include href="test.xsl" />
 	
+	<!-- Модуль для вывода главных страниц на доменах отличных от основного -->
+	<xsl:include href="common_for_other.xsl" />
 	
 </xsl:stylesheet>

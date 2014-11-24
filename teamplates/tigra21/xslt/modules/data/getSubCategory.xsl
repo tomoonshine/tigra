@@ -36,6 +36,9 @@
 	
 	
 	
+	
+	
+	
 	<!-- шаблон выводит категории товаров -->
 	<xsl:template match="udata[@method='getSubCategory']" mode="left-column-main?????">
 		<div class="children hidden-phone">
