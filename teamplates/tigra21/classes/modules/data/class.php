@@ -527,14 +527,32 @@ class data_custom extends def_module {
 		главную страницу 
 		каталог товаров
 	*/
-	public function addNewShop($domenName=NULL, $name){
+	public function addNewShop($domenName=NULL, $shopName){
 	
-		if (!$domenName) $domenName = getRequest('shopName');
-		
+		if (!$domenName) $domenName = getRequest('shopDomain');
+		if (!$shopName) $shopName = getRequest('shopName');
+			
 		// Страница для вывода в случае ошибки
 		$refererUrl = getServer('HTTP_REFERER');
 		$this->errorSetErrorPage($refererUrl);
+	
+			
+		// Проверка на пустые строки
+		if ((!$domenName) | (!$shopName)) {
+			$this->errorAddErrors('Не заполнены поля');
+			$this->errorThrow('public');
+		}
 		
+
+		
+		
+		// Проверка на корректность имени домена может содержать латинские буквы и цифры
+		if (preg_match("/[\W]/", $domenName, $matches)) {
+			$this->errorAddErrors('Название домена может содержать только латинские буквы и цифры');
+			$this->errorThrow('public');
+		}
+		
+				
 		// Проверка на существование домена в системе с таким же именем
 		$collection = domainsCollection::getInstance(); 
 		$domains = $collection->getList();
@@ -543,10 +561,11 @@ class data_custom extends def_module {
 			if($domenName.".tigra21.ru" == $host)
 			{
 				// echo "<br/>домен существует ";
-				$this->errorAddErrors('Магазин с таким названием уже есть');
+				$this->errorAddErrors('Магазин с доменом '.$domenName.' уже есть');
 				$this->errorThrow('public');
 			}
 		}
+		
 		
 		// получить текущего пользователя 
 		$permissions = permissionsCollection::getInstance();
@@ -576,7 +595,7 @@ class data_custom extends def_module {
 
 		// Записывает домен к пользователю
 		$user->setValue('shopid', $newDomainId);
-		$user->setValue('magazin', $domenName);
+		$user->setValue('magazin', $shopName);
 
 		// настройка шаблона
 		$collection = templatescollection::getInstance(); 
@@ -608,7 +627,7 @@ class data_custom extends def_module {
 		$page->setIsActive(true);
 		$page->setIsDefault(true);
 		// запишем название магазина
-		$page->nazvanie_magazina = $name;
+		$page->nazvanie_magazina = $shopName;
 		// запишымшымшым идентификатор пользователя
 		$page->polzovatel = $userId;
 		
@@ -628,43 +647,19 @@ class data_custom extends def_module {
 		$page->setIsActive(true);
 		
 		// Перевод пользователя в личный кабинет
-		$this->redirect($this->pre_lang . "/users/settings/");
+		$this->redirect($this->pre_lang . "/nastrojki_magazina/");
 	}
 	
 	
 	public function test($categoryID=NULL, $amount=0, $domain) {
 		echo "<br/>begin test";
 		
-		// $pages = new selector('pages');
-		// $pages->types('object-type')->id($categoryID);
-		// $pages->types('hierarchy-type')->name('catalog', 'object');
-		// $pages->where('hierarchy')->page($domain.'/goods/')->childs(1);
+		$string = "asdasddfgwermnvcbouihshgon3490234587432523465872452345";
+		$string2 = "weffsdgdfg=";
+		// Search for a match
+		if (!$string2) echo "<br/> пусто";
+		echo "<br/> " . preg_match("/[\W]/", $string2, $matches);
 		
-		
-		$categories = array($categoryID);
-		// получаем все подкатегории
-		$categories = array_merge($categories, $this->getChildren($categoryID));
-		
-		// Нуно сделать выборку элементов
-		$pages = new selector('pages');
-		//$pages->types('object-type')->id($categoryID);
-		foreach($categories as $cat) $pages->types('object-type')->id($cat);
-		$pages->types('hierarchy-type')->name('catalog', 'object');
-		$pages->where('hierarchy')->page($domain.'/goods/')->childs(1);
-	
-		// $goods = new selector('objects');
-		// задаються типы объектов для поиска
-	//	foreach($categories as $cat) $goods->types('object-type')->id($cat);
-		//
-		// не нужны объекты без имён
-		//$pages->where('name')->isnotnull(false); 
-		// количество элементов для отбора
-		$pages->limit(0,$amount);
-		// сортировочка в случайном порядке
-		$pages->order('rand');
-		
-		foreach($pages as $page)
-			echo "<a href=\"{$page->link}\">{$page->name}</a>\n";
 		
 		echo "<br/>end test";
 	}

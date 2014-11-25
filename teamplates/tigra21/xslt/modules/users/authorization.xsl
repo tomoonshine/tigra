@@ -9,12 +9,12 @@
 
 			<ul class="inline pull-right">
 				<li>
-					<a href="{$lang-prefix}/users/login/#login" >
+					<a href="http://tigra21.ru/users/login/#login" >
 						<span>Войти в кабинет <i class="b-head-control-panel__link-icon b-head-control-panel__icon-enter"></i></span>
 					</a>
 				</li>
 				<li>
-					<a title="Выйти" href="{$lang-prefix}/users/logout"> Выйти</a>
+					<a title="Выйти" href="http://tigra21.ru/users/logout"> Выйти</a>
 				</li>
 			</ul>
 		</div>
@@ -32,7 +32,7 @@
 			<ul class="inline pull-right">
 				<li>|</li>
 				<li>
-					<a href="{$lang-prefix}/users/login/#login" >
+					<a href="http://tigra21.ru/users/login/#login" >
 						<span>Войти в кабинет <i class="b-head-control-panel__link-icon b-head-control-panel__icon-enter"></i></span>
 					</a>
 				</li>
@@ -44,13 +44,13 @@
 							<i class="b-head-control-panel__drop-down-arrow icon-black-down-arrow"></i>
 							<ul class="b-head-control-panel__drop-down-menu">
 								<li class="b-head-control-panel__drop-down-item ">
-									<a href="#" class="b-head-control-panel__link b-head-control-panel__link_layout_with-icon">
+									<a href="http://tigra21.ru/registraciya/" class="b-head-control-panel__link b-head-control-panel__link_layout_with-icon">
 										<i class="b-head-control-panel__link-icon b-head-control-panel__icon-case"></i>
 										<span class="b-head-control-panel__link-text">Как продавец</span>
 									</a>
 								</li>
 								<li class="b-head-control-panel__drop-down-item ">
-									<a href="{$lang-prefix}/users/registrate" class="b-head-control-panel__link b-head-control-panel__link_layout_with-icon">
+									<a href="http://tigra21.ru/users/registrate" class="b-head-control-panel__link b-head-control-panel__link_layout_with-icon">
 										<i class="b-head-control-panel__link-icon b-head-control-panel__icon-user"></i>
 										<span class="b-head-control-panel__link-text">Как покупатель</span>
 										
@@ -64,9 +64,9 @@
 		</div>
 		<!-- <div class="span3">
 			<ul class="inline pull-right">
-				<li><a href="{$lang-prefix}/users/login/#login" title="Войти" id="header__authBlock_enter" data-toggle="modal"><i class="fa fa-user"></i> Вход</a></li>
+				<li><a href="http://tigra21.ru/users/login/#login" title="Войти" id="header__authBlock_enter" data-toggle="modal"><i class="fa fa-user"></i> Вход</a></li>
 				<li>|</li>
-				<li><a href="{$lang-prefix}/users/registrate" title="Зарегистрироваться" id="header__authBlock_reg" data-toggle="modal">Регистрация</a></li>
+				<li><a href="http://tigra21.ru/users/registrate" title="Зарегистрироваться" id="header__authBlock_reg" data-toggle="modal">Регистрация</a></li>
 			</ul>
 		</div> -->
 	</xsl:template>
@@ -110,7 +110,7 @@
 		<div class="hgroup title">
 			<h3>Авторизация</h3>
 		</div>
-		<form method="post" action="/users/login_do/" class="login-form">
+		<form method="post" action="http://tigra21.ru/users/login_do/" class="login-form">
 			<input type="hidden" name="from_page" value="{from_page}" />
 			<div class="box-content">
 				<div class="row-fluid">
@@ -140,7 +140,7 @@
 					<button class="btn btn-primary btn-small" type="submit" value="Submit">
 						&log-in;
 					</button><xsl:text> </xsl:text>
-					<a href="{$lang-prefix}/users/forget">Забыли пароль?</a>
+					<a href="http://tigra21.ru/users/forget">Забыли пароль?</a>
 					<i class="fa fa-spinner fa-spin"></i>
 					<span class="text-spinner">Авторизация...</span>
 				</div>		
@@ -157,11 +157,11 @@
 			</xsl:choose>
 		</div>
 		<div>
-			<a href="{$lang-prefix}/users/logout">
+			<a href="http://tigra21.ru/users/logout">
 				<xsl:text>&log-out;</xsl:text>
 			</a>
 			<xsl:text> | </xsl:text>
-			<a href="{$lang-prefix}/users/settings">
+			<a href="http://tigra21.ru/users/settings">
 				<xsl:text>&office;</xsl:text>
 			</a>
 		</div>
@@ -184,7 +184,7 @@
 	
 	<xsl:template name="login">
 		<div id="login" class="modal hide fade" tabindex="-1">
-			<form enctype="multipart/form-data" method="post" action="{$lang-prefix}/users/login_do">
+			<form enctype="multipart/form-data" method="post" action="http://tigra21.ru/users/login_do">
 				<input type="hidden" name="from_page" value="{from_page}" />
 				<div class="modal-header">
 					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
@@ -218,7 +218,7 @@
 					</div>
 					<div class="btn_line">
 						<button class="btn btn-primary btn-small" type="submit" value="Submit">&log-in;</button>
-						<a href="{$lang-prefix}/users/forget" class="link-to-forgetpsw">Забыли пароль?</a>
+						<a href="http://tigra21.ru/users/forget" class="link-to-forgetpsw">Забыли пароль?</a>
 						<i class="fa fa-spinner fa-spin"></i>
 						<span class="text-spinner">Авторизация...</span>
 					</div>

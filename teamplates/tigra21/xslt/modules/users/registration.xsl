@@ -23,7 +23,7 @@
 			<div class="box">
 				<div class="hgroup title">
 					<h3>Регистрация</h3>
-					<h5>Зарегистрированные пользователи получают доступ к истории заказов и скидкам.</h5>
+					<h5><!-- Зарегистрированные пользователи получают доступ к истории заказов и скидкам. --></h5>
 				</div>
 				<div class="box-content">
 					<xsl:apply-templates select="$errors" />
@@ -49,7 +49,7 @@
 						<div class="span6">
 						    <xsl:apply-templates select="$fields[@name='phone']" mode="registrate" />
 						</div>
-						<xsl:apply-templates select="$fields[not(@name='phone' or @name='fname' or @name='lname' or @name='father_name' or @name='electee_objects')]" mode="with-wrapper-registrate" />
+						<!-- <xsl:apply-templates select="$fields[not(@name='phone' or @name='fname' or @name='lname' or @name='father_name' or @name='electee_objects')]" mode="with-wrapper-registrate" /> -->
 					</div>
 					<div class="row-fluid">
 						<div class="span6">
@@ -163,7 +163,7 @@
 	
 	<xsl:template match="udata[@method = 'settings']">
 
-		<div class="pull-right"><strong>Кол-во бонусов: </strong> <xsl:choose><xsl:when test="$user-info////property[@name='bonus']/value"> <strong><xsl:value-of select="$user-info////property[@name='bonus']/value" /></strong></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose><xsl:text> </xsl:text><strong> руб. </strong></div>
+<!-- 		<div class="pull-right"><strong>Кол-во бонусов: </strong> <xsl:choose><xsl:when test="$user-info////property[@name='bonus']/value"> <strong><xsl:value-of select="$user-info////property[@name='bonus']/value" /></strong></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose><xsl:text> </xsl:text><strong> руб. </strong></div> -->
 
 
 
