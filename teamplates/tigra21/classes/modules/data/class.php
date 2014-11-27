@@ -260,15 +260,22 @@ class data_custom extends def_module {
 		$categories = array_merge($categories, $this->getChildren($categoryID));
 		
 		// Нуно сделать выборку элементов
-		$goods = new selector('objects');
-		// задаються типы объектов для поиска
-		foreach($categories as $cat) $goods->types('object-type')->id($cat);
-		// не нужны объекты без имён
-		$goods->where('name')->isnotnull(false); 
-		// количество элементов для отбора
-		$goods->limit(0,$amount);
+		$pages = new selector('pages');
+		$pages->types('hierarchy-type')->name('catalog', 'object');
+		
+		// собираем со всех поддоменов
+		$collection = domainsCollection::getInstance(); 
+		$domains = $collection->getList();
+		foreach ($domains as $domain) {
+			$host = $domain->getHost();
+			$pages->where('hierarchy')->page($host.'/goods/')->childs(1);
+		}
+	
+		// лимит на количество
+		$pages->limit(0,$amount);
+		
 		// сортировочка в случайном порядке
-		$goods->order('rand');
+		$pages->order('rand');
 		
 		// будем работать с хиерархией
 		$hierarchy = umiHierarchy::getInstance();
@@ -278,18 +285,16 @@ class data_custom extends def_module {
 		$block_arr = Array();
 		$lines = Array();
 		$length = 0;
-		foreach($goods as $obj) {
+		foreach($pages as $page) {
 			// полйчить все страницы объектом данных для которых являеться $obj
-			$pageId = $hierarchy->getObjectInstances($obj->id, true);
-			$page = $hierarchy->getElement($pageId[0]);
 			$line_arr = array();
 			$host = $domainsCollection->getDomain($page->getDomainId())->getHost();
 			$mainPageId = $hierarchy->getIdByPath($host.'/main/');
 			$mainPage = $hierarchy->getElement($mainPageId);
 			
 			$line_arr['attribute:pageId'] = $page->id;
-			$line_arr['attribute:object-id'] = $obj->id;
-			$line_arr['attribute:name'] = $obj->name;
+			$line_arr['attribute:object-id'] = $page->getObject();
+			$line_arr['attribute:name'] = $page->name;
 			$line_arr['attribute:h1'] =  $page->h1;
 			$line_arr['attribute:price'] = $page->price;
 			$line_arr['attribute:domain'] = $host;
@@ -349,17 +354,26 @@ class data_custom extends def_module {
 		// получаем все подкатегории
 		$categories = array_merge($categories, $this->getChildren($categoryID));
 		
+		
 		// Нуно сделать выборку элементов
-		$goods = new selector('objects');
+		$pages = new selector('pages');
+		$pages->types('hierarchy-type')->name('catalog', 'object');
 		// задаються типы объектов для поиска
-		foreach($categories as $cat) $goods->types('object-type')->id($cat);
-		//
-		// не нужны объекты без имён
-		$goods->where('name')->isnotnull(false); 
-		// количество элементов для отбора
-		$goods->limit(0,$amount);
+		foreach($categories as $cat) $pages->types('object-type')->id($cat);
+		
+		// собираем со всех поддоменов
+		$collection = domainsCollection::getInstance(); 
+		$domains = $collection->getList();
+		foreach ($domains as $domain) {
+			$host = $domain->getHost();
+			$pages->where('hierarchy')->page($host.'/goods/')->childs(1);
+		}
+	
+		// лимит на количество
+		$pages->limit(0,$amount);
+		
 		// сортировочка в случайном порядке
-		$goods->order('rand');
+		$pages->order('rand');
 		
 		// будем работать с хиерархией
 		$hierarchy = umiHierarchy::getInstance();
@@ -369,11 +383,7 @@ class data_custom extends def_module {
 		$block_arr = Array();
 		$htmlcode = ' ';
 		$length = 0;
-		foreach($goods as $obj) {
-			// полйчить все страницы объектом данных для которых являеться $obj
-			$pageId = $hierarchy->getObjectInstances($obj->id, true);
-			$page = $hierarchy->getElement($pageId[0]);
-			
+		foreach($pages as $page) {
 			// если имеються картинки то добавляем первую из всех
 			$src = ' ';
 			$jsonFILE = $page->tigra21_image_gallery;
@@ -388,9 +398,9 @@ class data_custom extends def_module {
 			// структура html
 			$htmlcode =	$htmlcode . '<li umi:element-id="' . $page->id . '" umi:region="row" class="standard">'
 							. '<div class="image">'
-								. '<a title="' . $obj->name .'" umi:element-id="' . $page->id . '" class="image-link" href="' .  $page->link . '">'
+								. '<a title="' . $page->name .'" umi:element-id="' . $page->id . '" class="image-link" href="' .  $page->link . '">'
 									. '<div style="width:170px; height: 170px" class="image_crop_block">'
-										. '<img width="170" title="' . $obj->name . '" alt="' . $obj->name . '" class="primary" src="' . $src .'"></img>'
+										. '<img width="170" title="' . $page->name . '" alt="' . $page->name . '" class="primary" src="' . $src .'"></img>'
 									. '</div>'
 								. '</a>'
 								. '</div>'
@@ -653,13 +663,30 @@ class data_custom extends def_module {
 	
 	public function test($categoryID=NULL, $amount=0, $domain) {
 		echo "<br/>begin test";
+
+
+
+		$pages = new selector('pages');
+		$pages->types('hierarchy-type')->name('catalog', 'object');
 		
-		$string = "asdasddfgwermnvcbouihshgon3490234587432523465872452345";
-		$string2 = "weffsdgdfg=";
-		// Search for a match
-		if (!$string2) echo "<br/> пусто";
-		echo "<br/> " . preg_match("/[\W]/", $string2, $matches);
+		$collection = domainsCollection::getInstance(); 
+		$domains = $collection->getList();
+		foreach ($domains as $domain) {
+			$host = $domain->getHost();
+			$pages->where('hierarchy')->page($host.'/goods/')->childs(1);
+		}
+		echo "<br/>".$host.'/goods/';
+		//$pages->where('hierarchy')->page($host.'/goods/')->childs(1);
 		
+		// $pages = new selector('pages');
+		// //$pages->types('object-type')->id(343);
+		// $pages->types('hierarchy-type')->name('catalog', 'object');
+		// $pages->where('hierarchy')->page('test1magaz.tigra21.ru/goods/')->childs(1);
+		
+		foreach($pages as $page)
+		 echo "<a href=\"{$page->link}\">{$page->name}</a>\n";
+
+		echo "Pages found: {$pages->length}";
 		
 		echo "<br/>end test";
 	}
