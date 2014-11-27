@@ -375,6 +375,13 @@ class data_custom extends def_module {
 		// сортировочка в случайном порядке
 		$pages->order('rand');
 		
+		
+		// понадобиться для картинок	
+		if (!$oContentMdl = cmsController::getInstance()->getModule("content")) { 
+			$this->errorAddErrors('Не удалось подключить модуль content');
+			$this->errorThrow('public');
+		}
+
 		// будем работать с хиерархией
 		$hierarchy = umiHierarchy::getInstance();
 		// на всякий случай вдруг понядобиться домен
@@ -394,33 +401,52 @@ class data_custom extends def_module {
 			$host = $domainsCollection->getDomain($page->getDomainId())->getHost();
 			$mainPageId = $hierarchy->getIdByPath($host.'/main/');
 			$mainPage = $hierarchy->getElement($mainPageId);
+			$imgArray = $oContentMdl->makeThumbnailCare('.'.$src,270,340,'void',0,1,0);
 			
 			// структура html
-			$htmlcode =	$htmlcode . '<li umi:element-id="' . $page->id . '" umi:region="row" class="standard">'
-							. '<div class="image">'
-								. '<a title="' . $page->name .'" umi:element-id="' . $page->id . '" class="image-link" href="' .  $page->link . '">'
-									. '<div style="width:170px; height: 170px" class="image_crop_block">'
-										. '<img width="170" title="' . $page->name . '" alt="' . $page->name . '" class="primary" src="' . $src .'"></img>'
-									. '</div>'
-								. '</a>'
-								. '</div>'
-								. '<div class="title">'
-									. '<a title="' .$mainPage->nazvanie_magazina . '" href="http://'. $host . '">'
-										. '<h3>'.$mainPage->nazvanie_magazina.'</h3>'
-									. '</a>'
-									. '<a title="товар 2" href="'. $page->link .'">'
-										. '<h3 umi:field-name="name" umi:element-id="'. $page->id.'" class="u-eip-edit-box" title="Нажмите Ctrl+левая кнопка мыши, чтобы перейти по ссылке.">товар 2</h3>'
-										. '<div class="prices">'
-											. '<span class="price">'.$page->price.'</span> руб'
-										. '</div>'
-										. '</a>'
-									. '<div class="btn_line add_from_list btn_line_">'
-										. '<i class="fa fa-spinner fa-spin"></i>'
-									. '</div>'
-									. '<div style="margin:20px"></div>'
-								.' </div>'
-						. '</li>';
-			
+			$htmlcode =	$htmlcode . '<li class="standard">'
+				. '<div class="image">'
+					. '<a title="' . $page->name .'" umi:element-id="' . $page->id . '" class="image-link" href="' .  $page->link . '">'
+						. '<div class="image_crop_block">'
+							.'<img src="'.$imgArray['src'].'" width="270" height="340" class="primary" data-zoom-image=" " alt="' . $page->name . '" title="' . $page->name . '">'
+						. '</div>'
+					. '</a>'
+					. '<div class="electee-wrap"><a href="#" class="fa fa-star-o add_electee_item" data-delete-url="/users/electee_delete/336" data-add-url="/users/electee_item/336" data-untext="Отменить" data-text="В избранное" data-id-sticky="#sticky-electee" data-placement="right" title="" data-original-title="В избранное"></a></div>'
+					. '</div>'
+					. '<div class="title">'
+						. '<a title="" href="'. $page->link .'">'
+							. '<h3 umi:field-name="name" umi:element-id="'. $page->id.'" class="u-eip-edit-box" title="Нажмите Ctrl+левая кнопка мыши, чтобы перейти по ссылке.">'
+							. $page->name .'</h3>'
+							. '<div class="prices">'
+								. '<span class="price">'.$page->price.'</span> руб'
+							. '</div>'
+						. '</a>'
+						.'<div class="item_properties">
+							<p>Характеристики:</p>
+							<ul class="list-border">
+							<li>?Бренд: Bruno Amaranti</li>
+							<li>?Материал: Кожа</li>
+							<li>?Цвет: Черный</li>
+							</ul>
+						</div>'
+						.'<div class="btn_line add_from_list btn_line_'.$page->id.'">
+							<div class="prices"> <span class="price">'.$page->price.'</span> руб</div>
+							<div class="starrating goodstooltip__starrating">
+								<span data-starrate="" class="starlight" style="width: 0px;"></span>
+							</div>
+							<a href="http://'. $host . '" title="'.$mainPage->nazvanie_magazina.'" class="btn btn-small btn-primary button options basket_list ">'
+							.$mainPage->nazvanie_magazina
+							.'</a><i class="fa fa-spinner fa-spin"></i>
+						</div>'
+						
+						
+						. '<div class="btn_line add_from_list btn_line_">'
+							. '<i class="fa fa-spinner fa-spin"></i>'
+						. '</div>'
+						. '<div style="margin:20px"></div>'
+					.' </div>'
+			. '</li>';
+	
 			$length++;
 		}
 
@@ -663,31 +689,18 @@ class data_custom extends def_module {
 	
 	public function test($categoryID=NULL, $amount=0, $domain) {
 		echo "<br/>begin test";
-
-
-
-		$pages = new selector('pages');
-		$pages->types('hierarchy-type')->name('catalog', 'object');
-		
-		$collection = domainsCollection::getInstance(); 
-		$domains = $collection->getList();
-		foreach ($domains as $domain) {
-			$host = $domain->getHost();
-			$pages->where('hierarchy')->page($host.'/goods/')->childs(1);
+		if ($oContentMdl = cmsController::getInstance()->getModule("content")) { 
+			// теперь доступны все public методы и свойства данного модуля 
+			$array = $oContentMdl->makeThumbnailCare('images/catalog/object/741/kriminal_noe_chtivo.jpg',270,340,'void',0,1,0);
+			var_dump($array);
+			echo "<br/> src " . $array['src'];
+			
 		}
-		echo "<br/>".$host.'/goods/';
-		//$pages->where('hierarchy')->page($host.'/goods/')->childs(1);
-		
-		// $pages = new selector('pages');
-		// //$pages->types('object-type')->id(343);
-		// $pages->types('hierarchy-type')->name('catalog', 'object');
-		// $pages->where('hierarchy')->page('test1magaz.tigra21.ru/goods/')->childs(1);
-		
-		foreach($pages as $page)
-		 echo "<a href=\"{$page->link}\">{$page->name}</a>\n";
+		else { 
+			echo "Не удалось загрузить модуль"; 
+		} 
+	
 
-		echo "Pages found: {$pages->length}";
-		
 		echo "<br/>end test";
 	}
 	

@@ -80,28 +80,91 @@
 							<div class="row">
 								<!-- Slider -->
 								<!-- Выводим слайдер (mode в /modules/content/common.xsl) -->	
-								<div class="span4">
+								<div class="span6">
 									<xsl:apply-templates select="document('udata://content/menu///285?extProps=photo,link')/udata" mode="slider" />
 								</div>
 
 								<!-- Акции магазинов -->
-								<div class="span2">
+								<!-- <div class="span2">
 									<xsl:apply-templates select="document('udata://news/lastlist/37/notemplate/2/1/?extProps=anons_pic')/udata" mode="widget-stock" />
-								</div>
+								</div> -->
 							</div>
 							
 							
 
 							<!-- вывод товаров на главной странице -->
 							
-							<div id="query"></div> <!-- это надо для фотографий чтобы увеличивались -->
+							<!-- <div id="query"></div> --> <!-- это надо для фотографий чтобы увеличивались -->
 							
 							<!-- старый шаблон вывода товаров -->
 							<!-- <xsl:apply-templates select="document('usel://getObject/?name_property=best_offers&amp;limit=12')/udata" mode="special-offers" /> -->
 							
 							<!-- наша новая выборка из магазинов random-->
-							<xsl:apply-templates select="document('udata://data/getProducts/240/10')/udata" mode="select_on_main_page" />
+							<!-- <xsl:apply-templates select="document('udata://data/getProducts/240/10')/udata" mode="select_on_main_page" /> -->
 
+							<!-- Новый вывод товаров -->
+							<div class="span6" style="margin-left: -3px;">
+								<div class="row">
+									<div class="span3">
+										<div class="row-fluid breadcrumb_lay hidden-phone">
+											<ul class="breadcrumb pull-left">
+												<!-- <li><a href="/shop/clothes/">?????</a></li>
+												<li class="active"><a href="/shop/clothes/woman/">========</a></li> -->
+											</ul>
+										</div>
+										<div><h1 id="title_MAIN">Все предложения</h1></div>
+									</div>
+									<div class="span3 hidden-phone">
+										<div class="row-fluid catalog_toolbar">
+											<div class="panel-view-item change pull-right">
+												<div class="btn slab">
+													<span rel="tooltip" title="" data-original-title="Вид: плиткой"><i class="fa fa-th-large"></i></span>
+												</div>
+												<div class="btn list act">
+													<span rel="tooltip" title="" data-original-title="Вид: списком"><i class="fa fa-th-list"></i></span>
+												</div>
+											</div>
+											<label class="pull-right slide-checkbox-wrapper item-view">
+												<span class="label-slide page-view">
+													<i class="fa fa-ellipsis-h"></i>
+													<span class="btline">Показать по страницам</span>
+												</span>
+												<span class="label-slide item-view">
+													<i class="fa fa-ellipsis-v"></i>
+													<span class="btline">Показать все товары</span>
+												</span>
+												<input type="checkbox" class="not-styler hide true" id="all" checked=""/>
+											</label>
+										</div>
+									</div>
+								</div>
+
+								<!-- вывод товаров -->
+								<xsl:apply-templates select="document('udata://data/getProducts/240/10')/udata" mode="select_on_main_page" />
+
+								<div class="loading-block" style="text-align: center;">
+									<i class="fa fa-spinner fa-spin fa-2x"></i>
+									Загрузка...
+								</div>
+								<div align="center" class="more-btn">
+									<a href="#" id="more-btn"></a>
+								</div>
+							</div>
+							
+							<!-- <script type="text/javascript" src="{$template-resources}js/libs/jquery.address-1.5.min.js"></script> -->
+							<script type="text/javascript" src="{$template-resources}js/libs/ajaxScroll.js"></script>
+							<!-- <script type="text/javascript" src="{$template-resources}js/libs/search-filter.js"></script> -->
+
+
+							 <!-- !Новый вывод товаров -->
+
+
+
+
+
+
+							
+							
 							<!-- Контент -->
 							<xsl:value-of select=".//property[@name = 'content']/value" disable-output-escaping="yes" />
 						</div>
@@ -110,7 +173,7 @@
 						<div class="span3">
 							
 							<div class="widget_right Productsonsale">
-							<!-- Рекламные банеры -->
+<!-- 							Рекламные банеры -->
 								<h3 class="widget-title widget-title ">Рекламные баннеры</h3>
 								<ul class="adverts">
 									<li>
@@ -125,7 +188,7 @@
 								</ul>
 							</div>
 			
-							<!-- Тлько сегодня -->
+						<!-- 	Тлько сегодня -->
 							<xsl:apply-templates select="$settings//property[@name='only_today']" mode="widget-category" />
 							
 						</div>

@@ -47,6 +47,7 @@ function changeActive(elm) {
 	// для выбраной задать класс
 	elm.className = 'active_link';
 	lastActive_link = elm;
+	document.getElementById('title_MAIN').innerHTML = elm.title;
 }
 
 
