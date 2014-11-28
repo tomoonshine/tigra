@@ -73,7 +73,7 @@
 									<div class="social">
 										<div id="sharrre">
 											<script type="text/javascript" src="//yandex.st/share/share.js" charset="utf-8"></script>
-											<div class="yashare-auto-init" data-yashareL10n="ru" data-yashareQuickServices="yaru,vkontakte,facebook,twitter,odnoklassniki,moimir,gplus" data-yashareTheme="counter"></div> 
+											<div class="yashare-auto-init" data-yasharel10n="ru" data-yasharequickservices="yaru,vkontakte,facebook,twitter,odnoklassniki,moimir,gplus" data-yasharetheme="counter"></div> 
 										</div>
 									</div>
 								</div>
@@ -192,7 +192,7 @@
 										<div class="tab-pane" id="description">
 											<xsl:apply-templates select=".//property[@name = 'information_description']" mode="information_description" />
 											<xsl:apply-templates select=".//group[@name = 'item_properties']" mode="item_properties" />
-											<xsl:apply-templates select="document(concat('udata://content/parseFileContent/', $document-page-id,'/ecake_file_gallery'))/udata" mode="parseFile" />
+											<xsl:apply-templates select="document(concat('udata://content/parseFileContent/', $document-page-id,'/tigra21_file_gallery'))/udata" mode="parseFile" />
 										</div>
 										<!-- End id="description" -->
 

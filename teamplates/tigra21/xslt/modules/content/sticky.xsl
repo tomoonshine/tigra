@@ -7,14 +7,14 @@
 	
 	
 	<xsl:template match="udata" mode="small_getRecentPages">
-		<a href="{$lang-prefix}/content/getRecentPages" class="fa fa-eye">
+		<a href="http://tigra21.ru/content/getRecentPages" class="fa fa-eye">
 			<span class="sticky-text">Просмотренное</span>
 			<span class="small_amount">0</span>
 		</a>
 	</xsl:template>
 	
 	<xsl:template match="udata[items/item]" mode="small_getRecentPages">
-		<a href="{$lang-prefix}/content/getRecentPages" class="fa fa-eye">
+		<a href="http://tigra21.ru/content/getRecentPages" class="fa fa-eye">
 			<span class="sticky-text">Просмотренное</span>
 			<span class="small_amount"><xsl:value-of select="count(items/item)" /></span>
 		</a>
@@ -34,7 +34,7 @@
 							</div>
 							<xsl:apply-templates select="$cart/summary" mode="summary" />
 						</div>
-						<a href="{$lang-prefix}/emarket/cart" title="Перейти в корзину &rarr;" class="sticky-cart-img pull-right">
+						<a href="http://tigra21.ru/emarket/cart" title="Перейти в корзину &rarr;" class="sticky-cart-img pull-right">
 							<span class="sticky-text">Корзина</span>
 							<span  class="small_amount"><xsl:if test="$cart/summary[amount &gt; 0]"><xsl:attribute name="class">small_amount notEmpty</xsl:attribute></xsl:if><xsl:apply-templates select="$cart/summary" mode="small_basket"/></span>
 						</a>
@@ -59,14 +59,14 @@
 	
 	
 	<xsl:template match="udata" mode="small_electee">
-		<a href="{$lang-prefix}/users/electee_item_view" class="fa fa-star">
+		<a href="http://tigra21.ru/users/electee_item_view" class="fa fa-star">
 			<span class="sticky-text">Избранное</span>
 			<span class="small_amount">0</span>
 		</a>
 	</xsl:template>
 	
 	<xsl:template match="udata[lines/item]" mode="small_electee">
-		<a href="{$lang-prefix}/users/electee_item_view" class="fa fa-star">
+		<a href="http://tigra21.ru/users/electee_item_view" class="fa fa-star">
 			<span class="sticky-text">Избранное</span>
 			<span class="small_amount"><xsl:value-of select="count(lines/item)" /></span>
 		</a>

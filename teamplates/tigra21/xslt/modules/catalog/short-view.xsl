@@ -13,6 +13,7 @@
 		<xsl:param name="lang-prefix" select="$lang-prefix" />
 		
 		<xsl:variable name="object" select="document(concat('upage://', @id))/udata" />
+		<xsl:variable name="shop" select="document(concat('udata://data/getShopName/', @id))/udata" />
 		<xsl:variable name="price" select="document(concat('udata://emarket/price/', @id,'//0'))/udata" />
 		<xsl:variable name="elecTest" select="document(concat('udata://users/electee_test/', @id))/udata/result" />
 		<xsl:variable name="is_options">
@@ -32,13 +33,12 @@
 				<a href="{@link}" class="image-link" umi:element-id="{@id}" title="{$object/page/name}">
 					<!-- Картинка -->
 					<div class="image_crop_block">
-						<img src="/images/cms/thumbs/b260740cbcdfe7890630b59376bb5cb5bfb24c52/19_1_270_340.jpg" width="270" height="340" class="primary" data-zoom-image="/images/cms/thumbs/b260740cbcdfe7890630b59376bb5cb5bfb24c52/19_1_1024_1024.jpg" alt="Сумка с сердцем из страз" title="Сумка с сердцем из страз"/>
-<!-- 						<xsl:apply-templates select="document(concat('udata://content/parseFileContent/', @id,'/tigra21_image_gallery'))/udata" mode="parseImageCatalog">
+						<xsl:apply-templates select="document(concat('udata://content/parseFileContent/', @id,'/tigra21_image_gallery'))/udata" mode="parseImageCatalog">
 							<xsl:with-param name="width" select="'270'"/>
 							<xsl:with-param name="height" select="'340'"/>
 							<xsl:with-param name="class" select="'primary'"/>
 							<xsl:with-param name="settings_catalog" select="$settings_catalog"/>
-						</xsl:apply-templates> -->
+						</xsl:apply-templates>
 					</div>
 					<xsl:apply-templates select="document(concat('udata://emarket/markerType/',@id))/udata" mode="market-type"/>
 				</a>
@@ -68,8 +68,36 @@
 				</xsl:if>
 			</div>
 			<div class="title">
-				
 				<a href="{@link}" title="{$object/page/name}">
+					<div class="prices">
+						<xsl:apply-templates select="$price/price" mode="discounted-price" />
+					</div>
+					<h3><xsl:value-of select="$object/page/name" /></h3>
+				</a>
+				
+				<div class="item_properties">
+					<p>Характеристики:</p>
+					<ul class="list-border">
+						<li>?Бренд: Bruno Amaranti</li>
+						<li>?Материал: Кожа</li>
+						<li>?Цвет: Черный</li>
+					</ul>
+				</div>
+				
+				<div class="btn_line add_from_list btn_line_{@id}">
+					<div class="prices">
+						<xsl:apply-templates select="$price/price" mode="discounted-price" />
+					</div>
+					<div class="starrating goodstooltip__starrating">
+						<span data-starrate="{$object//property[@name='summ_rating']/value}"  class="starlight"></span>
+					</div>
+					<a	href="http://{$shop/domain}" title="{$shop/name}" class="btn btn-small btn-primary button options basket_list ">
+						<xsl:value-of select="$shop/name" />
+					</a>
+					<i class="fa fa-spinner fa-spin"></i>
+					
+				</div>
+		<!-- 		<a href="{@link}" title="{$object/page/name}">
 					<div class="prices">
 						<xsl:apply-templates select="$price/price" mode="discounted-price" />
 					</div>
@@ -104,7 +132,7 @@
 							<i class="fa fa-spinner fa-spin"></i>
 						</xsl:otherwise>
 					</xsl:choose>
-				</div>
+				</div> -->
 			</div>
 		</li>
 	</xsl:template>

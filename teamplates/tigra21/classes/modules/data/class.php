@@ -341,6 +341,8 @@ class data_custom extends def_module {
 		
 		Вывод товаров в количестве &amount рандом указанной категории и входящих в нее категорий
 		в формате html требуется htmlDecode для обработки после получения ajax запросом
+		Доработанна. getProducts отстой. 
+		Если категория задана конечная то есть потомков у неё нет то выводиться 100 товаров
 	
 	*/
 	public function getSubCategoryCatalog($categoryID=NULL, $amount=0) {
@@ -349,28 +351,28 @@ class data_custom extends def_module {
 		if (!$categoryID) return;
 		if ($amount == 0) return;
 
+		$typesCollection = umiObjectTypesCollection::getInstance();
+		$objChldren = $typesCollection->getSubTypesList($categoryID);
+		$sheet = false;
+		// кзнаем не на лист ли перадали
+		if (count($objChldren) == 0) $sheet = true;
+		
 		// массив категорий по каторым нужно сделать отбор
-		$categories = array($categoryID);
+		//$categories = array($categoryID);
 		// получаем все подкатегории
-		$categories = array_merge($categories, $this->getChildren($categoryID));
+		//$categories = array_merge($categories, $this->getChildren($categoryID));
 		
 		
 		// Нуно сделать выборку элементов
 		$pages = new selector('pages');
 		$pages->types('hierarchy-type')->name('catalog', 'object');
 		// задаються типы объектов для поиска
-		foreach($categories as $cat) $pages->types('object-type')->id($cat);
-		
+		$pages->types('object-type')->id($categoryID);
 		// собираем со всех поддоменов
-		$collection = domainsCollection::getInstance(); 
-		$domains = $collection->getList();
-		foreach ($domains as $domain) {
-			$host = $domain->getHost();
-			$pages->where('hierarchy')->page($host.'/goods/')->childs(1);
-		}
+		$pages->where('domain')->isnull(false); 
 	
 		// лимит на количество
-		$pages->limit(0,$amount);
+		//$pages->limit(0,$amount);
 		
 		// сортировочка в случайном порядке
 		$pages->order('rand');
@@ -390,6 +392,8 @@ class data_custom extends def_module {
 		$block_arr = Array();
 		$htmlcode = ' ';
 		$length = 0;
+		// если лист то поболе вывести нужно
+		if ($sheet) $amount = 100;
 		foreach($pages as $page) {
 			// если имеються картинки то добавляем первую из всех
 			$src = ' ';
@@ -411,7 +415,15 @@ class data_custom extends def_module {
 							.'<img src="'.$imgArray['src'].'" width="270" height="340" class="primary" data-zoom-image=" " alt="' . $page->name . '" title="' . $page->name . '">'
 						. '</div>'
 					. '</a>'
-					. '<div class="electee-wrap"><a href="#" class="fa fa-star-o add_electee_item" data-delete-url="/users/electee_delete/336" data-add-url="/users/electee_item/336" data-untext="Отменить" data-text="В избранное" data-id-sticky="#sticky-electee" data-placement="right" title="" data-original-title="В избранное"></a></div>'
+					. '<div class="electee-wrap">
+						<a href="/users/electee_item/'
+						.$page->id
+						.'" class="fa fa-star-o add_electee_item" data-delete-url="/users/electee_delete/'
+						.$page->id
+						.'" data-add-url="/users/electee_item/'
+						.$page->id
+						.'" data-untext="Отменить" data-text="В избранное" data-id-sticky="#sticky-electee" data-placement="right" title="В избранное" data-original-title="В избранное"></a>
+					</div>'
 					. '</div>'
 					. '<div class="title">'
 						. '<a title="" href="'. $page->link .'">'
@@ -448,10 +460,12 @@ class data_custom extends def_module {
 			. '</li>';
 	
 			$length++;
+			if ($length == $amount) break;
 		}
-
-		// if ($length != 0) $block_arr['subnodes:items'] = $lines;
-		$block_arr['total'] = $length;
+		
+		$block_arr['sheet'] = $sheet;
+		$block_arr['total'] = $pages->length();
+		$block_arr['selected'] = $length;
 		$block_arr['htmlcode'] = $htmlcode . '<div class="clear"></div>';
 		return $this->parseTemplate('', $block_arr, null);
 	}
@@ -686,22 +700,44 @@ class data_custom extends def_module {
 		$this->redirect($this->pre_lang . "/nastrojki_magazina/");
 	}
 	
+	/*
+		Выводит название магазина и домен для указанной страницы
+	*/
+	public function getShopName($pageId) {
+		
+		
+		$hierarchy = umiHierarchy::getInstance();
+		// получаем umiHierarchyElement, либо false, если страница не существует
+		$page = $hierarchy->getElement($pageId); 	
+		
+		if (!$page instanceof umiHierarchyElement) {
+			// выбрасываем исключение
+			throw new publicException(getLabel('error-page-does-not-exist')); 
+		}
+		
+		
+		// получаем экземпляр коллекции
+		$collection = domainsCollection::getInstance(); 
+		$domain = $collection->getDomain($page->getDomainId());
+		$host = $domain->getHost();
+		$mainPageId = $hierarchy->getIdByPath($host.'/main/');
+		$mainPage = $hierarchy->getElement($mainPageId);
+		$block_arr = Array();
+		$block_arr['name'] = $mainPage->nazvanie_magazina;
+		$block_arr['domain'] = $host;
+		return $this->parseTemplate('', $block_arr, null);
+	}
+	
 	
 	public function test($categoryID=NULL, $amount=0, $domain) {
-		echo "<br/>begin test";
-		if ($oContentMdl = cmsController::getInstance()->getModule("content")) { 
-			// теперь доступны все public методы и свойства данного модуля 
-			$array = $oContentMdl->makeThumbnailCare('images/catalog/object/741/kriminal_noe_chtivo.jpg',270,340,'void',0,1,0);
-			var_dump($array);
-			echo "<br/> src " . $array['src'];
-			
-		}
-		else { 
-			echo "Не удалось загрузить модуль"; 
-		} 
-	
+		//echo "<br/>begin test";
 
-		echo "<br/>end test";
+		$refererUrl = getServer('HTTP_REFERER');
+		//echo $refererUrl;
+		$refererUrl = 'http://test1magaz.tigra21.ru/goods/palto_10/';
+		outputBuffer::current()->redirect($refererUrl);
+		
+		//echo "<br/>end test";
 	}
 	
 	public function errortest() {

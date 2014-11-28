@@ -103,13 +103,11 @@
 							<!-- <xsl:apply-templates select="document('udata://data/getProducts/240/10')/udata" mode="select_on_main_page" /> -->
 
 							<!-- Новый вывод товаров -->
-							<div class="span6" style="margin-left: -3px;">
+							<div id="goods_MAIN" class="span6" style="margin-left: -3px; display:none">
 								<div class="row">
 									<div class="span3">
 										<div class="row-fluid breadcrumb_lay hidden-phone">
 											<ul class="breadcrumb pull-left">
-												<!-- <li><a href="/shop/clothes/">?????</a></li>
-												<li class="active"><a href="/shop/clothes/woman/">========</a></li> -->
 											</ul>
 										</div>
 										<div><h1 id="title_MAIN">Все предложения</h1></div>
@@ -125,15 +123,6 @@
 												</div>
 											</div>
 											<label class="pull-right slide-checkbox-wrapper item-view">
-												<span class="label-slide page-view">
-													<i class="fa fa-ellipsis-h"></i>
-													<span class="btline">Показать по страницам</span>
-												</span>
-												<span class="label-slide item-view">
-													<i class="fa fa-ellipsis-v"></i>
-													<span class="btline">Показать все товары</span>
-												</span>
-												<input type="checkbox" class="not-styler hide true" id="all" checked=""/>
 											</label>
 										</div>
 									</div>
@@ -141,18 +130,15 @@
 
 								<!-- вывод товаров -->
 								<xsl:apply-templates select="document('udata://data/getProducts/240/10')/udata" mode="select_on_main_page" />
-
-								<div class="loading-block" style="text-align: center;">
-									<i class="fa fa-spinner fa-spin fa-2x"></i>
-									Загрузка...
-								</div>
 								<div align="center" class="more-btn">
-									<a href="#" id="more-btn"></a>
+									<div id="selected_MAIN"></div>
+									<div id="total_MAIN"></div>
+									<a onClick="LoadMore();" id="more-btn" style="cursor:pointer">- - Сделать выборку ещё раз - -</a>
 								</div>
 							</div>
 							
 							<!-- <script type="text/javascript" src="{$template-resources}js/libs/jquery.address-1.5.min.js"></script> -->
-							<script type="text/javascript" src="{$template-resources}js/libs/ajaxScroll.js"></script>
+						<!-- <script type="text/javascript" src="{$template-resources}js/libs/ajaxScroll.js"></script> -->
 							<!-- <script type="text/javascript" src="{$template-resources}js/libs/search-filter.js"></script> -->
 
 
@@ -166,7 +152,9 @@
 							
 							
 							<!-- Контент -->
+							<div id="content_MAIN" >
 							<xsl:value-of select=".//property[@name = 'content']/value" disable-output-escaping="yes" />
+							</div>
 						</div>
 						
 						<!-- Правая панель (рекламные банеры, Только сегодня) -->

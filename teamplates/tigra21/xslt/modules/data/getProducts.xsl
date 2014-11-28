@@ -9,7 +9,7 @@
 	
 	<xsl:template match="udata[@method='getProducts']" mode="select_on_main_page">
 		<ul class="product-list isotope objects list_view" id="catalog" style="position: relative; height: 3066px;">
-			<xsl:apply-templates select="items/item" mode="select_on_main_page" />
+			<!-- <xsl:apply-templates select="items/item" mode="select_on_main_page" /> -->
 			<div class="clear" />
 		</ul>
 	</xsl:template>
