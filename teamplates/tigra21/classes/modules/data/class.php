@@ -354,7 +354,7 @@ class data_custom extends def_module {
 		$typesCollection = umiObjectTypesCollection::getInstance();
 		$objChldren = $typesCollection->getSubTypesList($categoryID);
 		$sheet = false;
-		// кзнаем не на лист ли перадали
+		// узнаем не на лист ли перадали
 		if (count($objChldren) == 0) $sheet = true;
 		
 		// массив категорий по каторым нужно сделать отбор
@@ -443,12 +443,15 @@ class data_custom extends def_module {
 						</div>'
 						.'<div class="btn_line add_from_list btn_line_'.$page->id.'">
 							<div class="prices"> <span class="price">'.$page->price.'</span> руб</div>
-							<div class="starrating goodstooltip__starrating">
-								<span data-starrate="" class="starlight" style="width: 0px;"></span>
-							</div>
+							<div class="shopAdress_MainPage">'
+							.$mainPage->adress
+							.'</div>
+							<div>
 							<a href="http://'. $host . '" title="'.$mainPage->nazvanie_magazina.'" class="btn btn-small btn-primary button options basket_list ">'
 							.$mainPage->nazvanie_magazina
-							.'</a><i class="fa fa-spinner fa-spin"></i>
+							.'</a>
+							</div>
+							<i class="fa fa-spinner fa-spin"></i>
 						</div>'
 						
 						
@@ -646,6 +649,7 @@ class data_custom extends def_module {
 		// Записывает домен к пользователю
 		$user->setValue('shopid', $newDomainId);
 		$user->setValue('magazin', $shopName);
+		$user->setValue('imya_hosta', $collection->getDomain($newDomainId)->getHost());
 
 		// настройка шаблона
 		$collection = templatescollection::getInstance(); 
@@ -727,6 +731,111 @@ class data_custom extends def_module {
 		$block_arr['domain'] = $host;
 		return $this->parseTemplate('', $block_arr, null);
 	}
+	
+	public function changeShopName($shopName) {
+
+		
+		// Страница для вывода в случае ошибки
+		$refererUrl = getServer('HTTP_REFERER');
+		$this->errorSetErrorPage($refererUrl);
+		
+		if (!$shopName) $shopName = getRequest('shop_name');
+		// Проверка на пустые строки
+		if (!$shopName) {
+			$this->errorAddErrors('Не заполнены поля');
+			$this->errorThrow('public');
+		}
+		
+				
+		$permissions = permissionsCollection::getInstance();
+		$userId = $permissions->getUserId();
+		if ($userId == '13') { echo "error"; return; }
+		$objectsCollection = umiObjectsCollection::getInstance();
+		$user = $objectsCollection->getObject($userId);
+		// получаем экземпляр коллекции
+		$collection = domainsCollection::getInstance(); 
+		$domain = $collection->getDomain($user->getValue('shopid'));
+		$host = $domain->getHost();
+		$hierarchy = umiHierarchy::getInstance();
+		$mainPageId = $hierarchy->getIdByPath($host.'/main/');
+		$mainPage = $hierarchy->getElement($mainPageId);
+		
+		$user->setValue('magazin', $shopName);
+		$mainPage->nazvanie_magazina = $shopName;
+		
+		
+		// Перевод пользователя в личный кабинет
+		$this->redirect($this->pre_lang . "/nastrojki_magazina/");
+		
+		
+	}
+	
+	public function getShopProducts($domainId=NULL, $amount=25){
+		
+		// если нихрена не задано то ну его нафиг
+		if (!$domainId) return;
+		
+		$domainsCollection = domainsCollection::getInstance();
+		$domain = $domainsCollection->getDomain($domainId);
+		$host = $domain->getHost();
+		// Нуно сделать выборку элементов
+		$pages = new selector('pages');
+		$pages->types('hierarchy-type')->name('catalog', 'object');
+		// задаються типы объектов для поиска
+		$pages->types('object-type')->id(240);
+		
+		// выбираем с поддомена в каталоге goods
+		$pages->where('hierarchy')->page($host.'/goods/')->childs(1);
+	
+		// лимит на количество
+		//$pages->limit(0,$amount);
+		
+		// сортировочка в случайном порядке
+		//$pages->order('rand');
+		
+		$block_arr = Array();
+		$lines = Array();
+		$length = 0;
+		foreach($pages as $page) {
+			// полйчить все страницы объектом данных для которых являеться $obj
+			$line_arr = array();
+		
+			$line_arr['attribute:pageId'] = $page->id;
+			$line_arr['attribute:object-id'] = $page->getObject();
+			$line_arr['attribute:name'] = $page->name;
+			$line_arr['attribute:h1'] =  $page->h1;
+			$line_arr['attribute:price'] = $page->price;
+			$line_arr['attribute:link'] = $page->link;	
+			// если имеються картинки то добавляем первую из всех
+			$jsonFILE = $page->tigra21_image_gallery;
+			$jsonFILE = json_decode($jsonFILE, true);
+			if(!empty($jsonFILE)) {
+				$line_arr['attribute:image']= $jsonFILE['0']['src'];
+			}
+		
+			$lines[] = $line_arr;
+			$length++;
+		}
+
+		if ($length != 0) $block_arr['subnodes:items'] = $lines;
+		$block_arr['total'] = $length;
+		
+		return $this->parseTemplate('', $block_arr, null);
+		
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	
 	public function test($categoryID=NULL, $amount=0, $domain) {

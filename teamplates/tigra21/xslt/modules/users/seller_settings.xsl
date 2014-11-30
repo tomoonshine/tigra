@@ -12,53 +12,46 @@
 		Оригинальный закоментирован в файле registration.xml
 	-->
 	<xsl:template match="result[@method = 'settings']">
-<!-- 		<xsl:choose>
-		
-			Если пользователь состоит в группе "Продавцы"
-			<xsl:when test="document(concat('uobject://',user/@id,'.groups'))//value/item/@id = 10196">
-				<xsl:apply-templates select="document('udata://users/settings')" mode="seller"/>
-			</xsl:when>
-
-			В другом случае
-			<xsl:otherwise>
-				<xsl:apply-templates select="document('udata://users/settings')" />
-			</xsl:otherwise>
-		</xsl:choose> -->
 		<xsl:apply-templates select="document('udata://users/settings')" />
 	</xsl:template>
 	
 	<xsl:template match="udata[@method = 'settings']" mode="seller">
-<!-- 		<form action="{$lang-prefix}/data/addNewShop" method="post" enctype="multipart/form-data" >
-			<table class="table" id="acc_info">
-			<tbody>
-				<tr>
-					<th>Название магазина</th>
-					<td>
-						<input type="text" name="shopName"  readonly="" value=""/>
-					</td>
-				</tr> 
-				<tr>
-					<th></th>
-					<td>
-						<a href="#" class="btn btn-turquoise btn-small" id="lk-edit-btn">Редактировать</a>    
-						<input type="button" class="hide btn btn-small" id="lk-cancel-btn" value="Отменить" />
-						<input type="submit" class="hide btn btn-turquoise btn-small" value="Cохранить" />
-					</td>
-				</tr>						
-			</tbody>
-			</table>
-			
-		</form> -->
 	</xsl:template>
 	
+	<!-- Шаблон на вывод настроек магазина -->
 	<xsl:template match="result[page/@id='745']">
 		<xsl:variable name="user" select="document(concat('uobject://',user/@id))" />
 		<xsl:choose>
 			<xsl:when test="$user//property[@name = 'shopid']">
-				++++
+				<form action="http://tigra21.ru/data/changeShopName"  method="post" enctype="multipart/form-data" id="settings-form">
+					<table class="table" id="acc_info">
+						<tbody>
+							<tr>
+								<th>Название магазина</th>
+								<td>
+									<input type="text" name="shop_name"  readonly="" value="{$user-info//property[@name = 'magazin']/value}"/>
+								</td>
+							</tr> 
+							<tr>
+								<th>Домен</th>
+								<td>
+									<xsl:value-of select="$user-info//property[@name = 'imya_hosta']/value" />
+								</td>
+							</tr>
+							<tr>
+								<th></th>
+								<td>
+									<a href="#" class="btn btn-turquoise btn-small" id="lk-edit-btn">Редактировать</a>    
+									<input type="button" class="hide btn btn-small" id="lk-cancel-btn" value="Отменить" />
+									<input type="submit" class="hide btn btn-turquoise btn-small" value="Cохранить" />
+								</td>
+							</tr>
+						</tbody>
+					</table>
+					</form>
 			</xsl:when>
 			<xsl:otherwise>
-				<p class="lead">Добавте магазин</p>
+				<p class="lead">Добавьте магазин</p>
 				<!-- <form action="http://tigra21.ru/data/addNewShop" method="post" enctype="multipart/form-data" > -->
 				<form action="http://tigra21.ru/data/addNewShop" method="post" enctype="multipart/form-data" onsubmit="site.forms.data.save(this); return site.forms.data.check(this);">
 					<table class="table" id="acc_info">
@@ -101,27 +94,52 @@
 				</form>
 			</xsl:otherwise>
 		</xsl:choose>
-<!-- 		<form action="{$lang-prefix}/data/addNewShop" method="post" enctype="multipart/form-data" >
+	</xsl:template>
+	
+	<!-- Шаблон на вывод во вкладке товары -->
+	<xsl:template match="result[page/@id='866']">
+		<xsl:variable name="user" select="document(concat('uobject://',user/@id))" />
+		<!-- Вывод всех товаров -->
+		<!-- <xsl:value-of select="$user//property[@name='shopid']/value" /> -->
+		<xsl:apply-templates select="document(concat('udata://data/getShopProducts/',$user//property[@name='shopid']/value))"/>
+		<!-- Добавить товар -->
+		<p class="lead">Добавьте товар</p>
+		<form action="http://tigra21.ru/data/addNewShop" method="post" enctype="multipart/form-data" onsubmit="site.forms.data.save(this); return site.forms.data.check(this);">
 			<table class="table" id="acc_info">
 			<tbody>
 				<tr>
-					<th>Название магазина</th>
+					<th>Название продукта</th>
 					<td>
-						<input type="text" name="shopName"  readonly="" value=""/>
+						<div class="control-group required">
+							<input type="text" name="product_name" value=""/>
+						</div>
+					</td>
+					<td>
+						
 					</td>
 				</tr> 
 				<tr>
 					<th></th>
 					<td>
-						<a href="#" class="btn btn-turquoise btn-small" id="lk-edit-btn">Редактировать</a>    
-						<input type="button" class="hide btn btn-small" id="lk-cancel-btn" value="Отменить" />
-						<input type="submit" class="hide btn btn-turquoise btn-small" value="Cохранить" />
+						<input type="submit" class="btn btn-turquoise btn-small" value="Добавить" />
+					</td>
+					<td>
 					</td>
 				</tr>						
 			</tbody>
 			</table>
-			
-		</form>  -->
+		</form>
 	</xsl:template>
 	
+	<xsl:template match="udata[@module='data'][@method='getShopProducts']">
+		<xsl:apply-templates select="items/item" />
+	</xsl:template>
+	
+	<xsl:template match="udata[@method='getShopProducts']//item">
+		<a href="@link"><xsl:value-of select="@name" /> </a>
+		Цена: <xsl:value-of select="@price" />
+		Фотографии:
+		
+		<br/>
+	</xsl:template>
 </xsl:stylesheet>
