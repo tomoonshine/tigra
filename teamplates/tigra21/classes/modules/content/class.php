@@ -11,7 +11,8 @@ class content_custom extends def_module {
           TODO нет параметра quality надо добавить
      */
      public function makeThumbnailCare($path, $width, $height, $template = "default", $returnArrayOnly = false, $fixHeight = false, $admin = false, $thumbs_path = false) { 
-          if(!$template) $template = "default";
+         
+		  if(!$template) $template = "default";
 		  
           $thumbs_path = ($thumbs_path) ? $thumbs_path : "./images/cms/thumbs/";
           $image = new umiImageFile($path);
@@ -19,12 +20,16 @@ class content_custom extends def_module {
           $file_ext = $image->getExt();
           $thumbPath = ($admin) ? '/thumb_admin' : sha1($image->getDirName());
 		  
+		  // echo "<br/> file ". $file_name;
+		  
           if (!is_dir($thumbs_path.$thumbPath)) {
                mkdir($thumbs_path.$thumbPath, 0755);
           } 
+		  
           $file_ext = strtolower($file_ext);
           $allowedExts = Array('gif', 'jpeg', 'jpg', 'png', 'bmp');
           if(!in_array($file_ext, $allowedExts)) return "";
+		  
 		  if($admin){
 			$file_name_new = $file_name;
 		  } else {
@@ -32,6 +37,7 @@ class content_custom extends def_module {
 			  $file_name_new = $file_name . "_" . $width . "_" . $height . "." . $file_ext;
 		  }
           $path_new = $thumbs_path .$thumbPath."/". $file_name_new;
+		  
           if(!file_exists($path_new) || filemtime($path_new) < filemtime($path)) {
                if(file_exists($path_new)) {
                     unlink($path_new);
@@ -136,11 +142,13 @@ class content_custom extends def_module {
                $arr['src'] = str_replace("&", "&amp;", $arr['src']);
           }
           // с
+		  
           if(cmsController::getInstance()->getCurrentMode() == "admin") {
                $arr['src'] = str_replace("&", "&amp;", $arr['src']);
           }
           if($returnArrayOnly) {
                return $arr;
+  
           } else {
                list($tpl) = def_module::loadTemplates("thumbs/".$template, "image");
                return def_module::parseTemplate($tpl, $arr);

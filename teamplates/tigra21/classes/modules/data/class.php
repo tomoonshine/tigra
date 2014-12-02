@@ -701,7 +701,7 @@ class data_custom extends def_module {
 		$page->setIsActive(true);
 		
 		// Перевод пользователя в личный кабинет
-		$this->redirect($this->pre_lang . "/nastrojki_magazina/");
+		$this->redirect($this->pre_lang . "/stranicy_dlya_lichnogo_kabineta/nastrojki_magazina/");
 	}
 	
 	/*
@@ -765,11 +765,14 @@ class data_custom extends def_module {
 		
 		
 		// Перевод пользователя в личный кабинет
-		$this->redirect($this->pre_lang . "/nastrojki_magazina/");
+		$this->redirect($this->pre_lang . "/stranicy_dlya_lichnogo_kabineta/nastrojki_magazina/");
 		
 		
 	}
 	
+	/*
+		Получить все товары в магазине, определяется по домену, в количестве amount.
+	*/
 	public function getShopProducts($domainId=NULL, $amount=25){
 		
 		// если нихрена не задано то ну его нафиг
@@ -810,7 +813,13 @@ class data_custom extends def_module {
 			$jsonFILE = $page->tigra21_image_gallery;
 			$jsonFILE = json_decode($jsonFILE, true);
 			if(!empty($jsonFILE)) {
-				$line_arr['attribute:image']= $jsonFILE['0']['src'];
+				$images = array();
+				foreach ($jsonFILE as $img) {
+					$image = array();
+					$image['attribute:src']= $jsonFILE['0']['src'];
+					$images[] = $image;
+				}
+				$line_arr['images']['subnodes:items'] = $images;
 			}
 		
 			$lines[] = $line_arr;
@@ -824,6 +833,93 @@ class data_custom extends def_module {
 		
 	}
 	
+
+	/*
+		добавляет новый товар в каталог магазина goods
+		через POST запрос
+		input product_name Обязательный параметр
+		input categoryId Обязательный параметр
+		input price
+		textarea description
+		$_FILES["image"] один или несколько файлов массив
+	*/
+	public function addNewProduct() {
+	
+		// Страница для вывода в случае ошибки
+		$refererUrl = getServer('HTTP_REFERER');
+		$this->errorSetErrorPage($refererUrl);	
+				
+		$poductName = getRequest('product_name');
+		$categoryId = getRequest('categoryId');
+		$price = getRequest('price');
+		$description = getRequest('description');
+		
+		$errors = false;
+		// Проверка на пустые строки
+		if ((!$poductName) | (!$categoryId)) {
+			$this->errorAddErrors('Не заполнены поля');
+			$this->errorThrow('public');
+		}
+				
+		// получить текущего пользователя 
+		$permissions = permissionsCollection::getInstance();
+		$userId = $permissions->getUserId();
+		$objectsCollection = umiObjectsCollection::getInstance();
+		$user = $objectsCollection->getObject($userId);
+		
+		$domainsCollection = domainsCollection::getInstance(); 
+
+		$hierarchy = umiHierarchy::getInstance();
+		$goodsId = $hierarchy->getIdByPath($user->imya_hosta.'/goods');
+		
+		$newPageId = $hierarchy->addElement($goodsId,$categoryId,$poductName,NULL,$categoryId);
+
+		if($newPageId === false) {
+			$this->errorAddErrors('Не удалось добавть товар. Обратитесь к администратору сайта.');
+			$this->errorThrow('public');
+		}
+		 //Установим права на страницу в состояние "по умолчанию"
+		$permissions->setDefaultPermissions($newPageId);
+		$page = $hierarchy->getElement($newPageId); 
+		$page->setIsActive(true);
+		$page->price = $price;
+		$page->description= $description;
+		
+		// загружаем файлы
+		$filetype = array ( 'jpg', 'gif', 'png', 'jpeg');
+		mkdir("images/catalog/object/".$newPageId);
+		$image_gallery = array();
+		foreach ($_FILES["image"]["error"] as $key => $error) {
+			$imageInGallery = array();
+			// Проверяем загружен ли файл
+			if($error == UPLOAD_ERR_OK)
+			{
+				$imgName = $_FILES["image"]["name"][$key];
+				
+				$upfiletype = substr( $imgName,  strrpos( $imgName, "." ) + 1 );
+				if ( in_array ( $upfiletype, $filetype ) ) {
+					move_uploaded_file($_FILES["image"]["tmp_name"][$key], 'images/catalog/object/'.$newPageId.'/'.$imgName);
+					$imageInGallery['name'] = $imgName;
+					$imageInGallery['altName'] = $poductName;
+					$imageInGallery['src'] = '/images/catalog/object/'.$newPageId.'/'.$imgName;
+					$imageInGallery['type'] = $upfiletype;
+					
+				} else {
+					$this->errorAddErrors('Не удалось загрузить картику.'.$imgName.' Тип не поддерживается.');
+				
+				}
+			} else {
+				$this->errorAddErrors('Не удалось загрузить картику. Обратитесь к администратору сайта.');	
+				$errors = true;
+			}
+			$image_gallery[] = $imageInGallery;
+		}
+		$page->tigra21_image_gallery = json_encode($image_gallery);
+		
+		if($errors) $this->errorThrow('public');
+		
+		$this->redirect($this->pre_lang . "/stranicy_dlya_lichnogo_kabineta/tovary/");
+	}
 	
 	
 	
