@@ -700,6 +700,18 @@ class data_custom extends def_module {
 		$page = $hierarchy->getElement($newPageId); 
 		$page->setIsActive(true);
 		
+		// Добавим все дружно каталог для новостей - ленту новостей
+		$newPageId = $hierarchy->addElement(0,31,"Акции и новости магазина","promotionsandnews",31,$newDomainId,$defLangId,$newTmplId);
+		if($newPageId === false) {
+			$this->errorAddErrors('Не удалось создать ленту новостей. Обратитесь к администратору сайта (: бывает такое на нашей планете.');
+			$this->errorThrow('public');
+		}
+		//Установим права на страницу в состояние "по умолчанию"
+		$permissions->setDefaultPermissions($newPageId);
+		// $permissions->setElementPermissions(13,$newPageId,1);
+		$page = $hierarchy->getElement($newPageId); 
+		$page->setIsActive(true);
+		
 		// Перевод пользователя в личный кабинет
 		$this->redirect($this->pre_lang . "/stranicy_dlya_lichnogo_kabineta/nastrojki_magazina/");
 	}

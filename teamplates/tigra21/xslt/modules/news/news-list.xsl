@@ -51,6 +51,8 @@
             </article>
 	</xsl:template>
 	
+
+	<!-- Новости магазина -->
 	<xsl:template match="udata[@method = 'lastlist']" mode="widget-stock"/>
 	<xsl:template match="udata[@method = 'lastlist'][items/item]" mode="widget-stock" >
 	    <xsl:param name='class-widget' select="'widget Productsonsale'" />

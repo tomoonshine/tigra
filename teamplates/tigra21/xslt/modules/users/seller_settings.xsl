@@ -99,67 +99,74 @@
 	<!-- Шаблон на вывод во вкладке товары -->
 	<xsl:template match="result[page/@id='866']">
 		<xsl:variable name="user" select="document(concat('uobject://',user/@id))" />
-		<!-- Вывод всех товаров -->
-		<!-- <xsl:value-of select="$user//property[@name='shopid']/value" /> -->
-		<xsl:apply-templates select="document(concat('udata://data/getShopProducts/',$user//property[@name='shopid']/value))"/>
-		<!-- Добавить товар -->
-		<p class="lead">Добавьте товар</p>
-		<form action="http://tigra21.ru/data/addNewProduct" method="post" enctype="multipart/form-data" onsubmit="site.forms.data.save(this); return site.forms.data.check(this);">
-			<table class="table" >
-			<tbody>
-				<tr>
-					<th>Название продукта</th>
-					<td>
-						<div class="control-group required">
-							<input type="text" name="product_name" value=""/>
-						</div>
-					</td>
-					<td>
-						
-					</td>
-				</tr> 
-				<tr>
-					<th>Категория</th>
-					<td>
-						<input id="category_id" type="hidden" name="categoryId" value="0" />
-						<xsl:apply-templates select="document('udata://data/getSubCategory/240')" mode="seller_setting"/>
-					</td>
-					<td></td>
-				</tr>
-				<tr>
-					<th>Фотографии</th>
-					<td>
-						<input type="file" name="image[]" accept="image/jpeg,image/png,image/gif"/>
-						<input type="file" name="image[]" accept="image/jpeg,image/png,image/gif"/>
-					</td>
-					<td></td>
-				</tr>
-				<tr>
-					<th>Цена</th>
-					<td>
-						<input type="text" name="price" value=""/>
-					</td>
-					<td></td>
-				</tr>
-				<tr>
-					<th>Описание</th>
-					<td>
-						<textarea name="description">
-						</textarea>
-					</td>
-					<td></td>
-				</tr>
-				<tr>
-					<th></th>
-					<td>
-						<input type="submit" class="btn btn-turquoise btn-small" value="Добавить" />
-					</td>
-					<td>
-					</td>
-				</tr>						
-			</tbody>
-			</table>
-		</form>
+		<xsl:choose>
+			<xsl:when test="$user//property[@name='shopid']/value" >
+				<!-- Вывод всех товаров -->
+				<!-- <xsl:value-of select="$user//property[@name='shopid']/value" /> -->
+				<xsl:apply-templates select="document(concat('udata://data/getShopProducts/',$user//property[@name='shopid']/value))"/>
+				<!-- Добавить товар -->
+				<p class="lead">Добавьте товар</p>
+				<form action="http://tigra21.ru/data/addNewProduct" method="post" enctype="multipart/form-data" onsubmit="site.forms.data.save(this); return site.forms.data.check(this);">
+					<table class="table" >
+					<tbody>
+						<tr>
+							<th>Название продукта</th>
+							<td>
+								<div class="control-group required">
+									<input type="text" name="product_name" value=""/>
+								</div>
+							</td>
+							<td>
+								
+							</td>
+						</tr> 
+						<tr>
+							<th>Категория</th>
+							<td>
+								<input id="category_id" type="hidden" name="categoryId" value="0" />
+								<xsl:apply-templates select="document('udata://data/getSubCategory/240')" mode="seller_setting"/>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<th>Фотографии</th>
+							<td>
+								<input type="file" name="image[]" accept="image/jpeg,image/png,image/gif"/>
+								<input type="file" name="image[]" accept="image/jpeg,image/png,image/gif"/>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<th>Цена</th>
+							<td>
+								<input type="text" name="price" value=""/>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<th>Описание</th>
+							<td>
+								<textarea name="description">
+								</textarea>
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+							<th></th>
+							<td>
+								<input type="submit" class="btn btn-turquoise btn-small" value="Добавить" />
+							</td>
+							<td>
+							</td>
+						</tr>						
+					</tbody>
+					</table>
+				</form>
+			</xsl:when>
+			<xsl:otherwise>
+				Настройте магазин
+			</xsl:otherwise>
+		</xsl:choose>
 	</xsl:template>
 	
 	<xsl:template match="udata[@module='data'][@method='getShopProducts']">

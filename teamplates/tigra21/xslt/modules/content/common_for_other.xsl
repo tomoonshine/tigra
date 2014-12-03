@@ -80,7 +80,8 @@
 
 								<!-- Акции магазинов -->
 								<div class="span2">
-									<xsl:apply-templates select="document('udata://news/lastlist/37/notemplate/2/1/?extProps=anons_pic')/udata" mode="widget-stock" />
+									<xsl:apply-templates select="document(concat('udata://news/lastlist/(',$domain,'/promotionsandnews)/notemplate/2/1/?extProps=anons_pic'))/udata" mode="widget-stock" />
+<!-- 									<xsl:apply-templates select="document('udata://news/lastlist/37/notemplate/2/1/?extProps=anons_pic')/udata" mode="widget-stock" /> -->
 								</div>
 							</div>
 							

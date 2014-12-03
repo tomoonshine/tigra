@@ -5,7 +5,6 @@
 	
 	<!-- cabinet templates -->
 	<xsl:template match="result[(@module='users' and @method='settings') or (@module='emarket' and @method='ordersListStatus') or (@module='dispatches' and @method='subscribe') or (page/@id='745') or (page/@id='866')]" mode="main_template">
-		
 		<!-- Static page 1 -->
 		<section class="static_page_1">
 			<div class="container">
@@ -55,7 +54,15 @@
 											</li>
 											<li>
 												<!-- <xsl:if test="@module='dispatches' and @method='subscribe'"><xsl:attribute name="class">active</xsl:attribute></xsl:if> -->
-												<a href="#" title="Акции" class="title">Акции</a>
+												<a href="#" title="Акции" class="title">Акции, Новости</a>
+											</li>
+											<li>
+												<!-- <xsl:if test="@module='dispatches' and @method='subscribe'"><xsl:attribute name="class">active</xsl:attribute></xsl:if> -->
+												<a href="#" title="Информация об организации" class="title">Информация об организации</a>
+											</li>
+											<li>
+												<!-- <xsl:if test="@module='dispatches' and @method='subscribe'"><xsl:attribute name="class">active</xsl:attribute></xsl:if> -->
+												<a href="#" title="Рассылки" class="title">Рассылки</a>
 											</li>
 										</xsl:if>
 									</ul>                                       
@@ -100,6 +107,8 @@
 		</section> 
 		
 	</xsl:template>
+	
+	
 	
 	<xsl:template match="/result[@method = 'personal']">
 		<script>
