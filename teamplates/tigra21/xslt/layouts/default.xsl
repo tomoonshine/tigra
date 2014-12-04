@@ -40,6 +40,9 @@
 				    <script src="{$template-resources}js/admin/umi-eip.custom.js" type="text/javascript"></script>
 				    <script type="text/javascript" src="/styles/skins/mac/design/js/custom.events.upload-photo.js"></script>
 				</xsl:if>
+                
+				<script type="text/javascript" src="/js/cross-domain.php"></script>
+                
 
 				
 			</head>

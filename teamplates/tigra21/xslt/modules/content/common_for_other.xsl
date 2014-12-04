@@ -17,37 +17,16 @@
 							
 							
 							<!-- Категории товаров -->
-							<!-- старый шаблон категорий -->
-							<!-- <xsl:apply-templates select="document('udata://catalog/getCategoryList//36/100/1')/udata" mode="left-column-main" /> -->
-							<!-- новый шаблон категорий -->
-							<!-- <xsl:apply-templates select="document('udata://data/getSubCategory/240')/udata" mode="left-column-main" /> -->
 							<div class="widget Categories is-default hidden-phone">
 								<h3 class="widget-title widget-title ">Каталог</h3>
 								<xsl:value-of select="document(concat('udata://data/GetMagazCatalog/',$domain))/udata/htmlcode" disable-output-escaping="yes" />
-<!-- 								<div id ="categoryList">
-									<div href="" onClick="getCategoryList('{$domain}')" >asdasd</div>
-								</div> -->
 							</div>
-<!-- 							<script>
-								function on(sdf) {
-								alert(sdf);	
-								getCategoryList(sdf);
-								}
-								on('<xsl:value-of select="$domain" />');
-								
-							</script> -->
-<!-- 								getCategoryList("<xsl:value-of select="$domain" />"); -->						
-							
-							<!-- <xsl:apply-templates select="document('usel://getObject/?name_property=best_offers&amp;limit=3')/udata" mode="widget-category">
-							    <xsl:with-param name='title' select="'Лучшие предложения'" />
-							    <xsl:with-param name='class-widget' select="'widget LatestProductReviews visible-phone'" />
-							</xsl:apply-templates> -->
-							
+				
 
 							
 							<!-- Новинки-->
 							<xsl:apply-templates select="document('usel://getObject/?name_property=new_product&amp;limit=3')/udata" mode="widget-category">
-                                <xsl:with-param name='title' select="'Новинки магазинов'" />
+                                <xsl:with-param name='title' select="'Новинки'" />
                                 <xsl:with-param name='class-widget' select="'widget_left  LatestProducts'" />
 								<xsl:with-param name='link' select="'/catalog/getObjectDiscount/?usel=new'" />
                             </xsl:apply-templates>
@@ -57,7 +36,7 @@
 							
 							<!-- Скидки -->
 							<xsl:apply-templates select="document('udata://catalog/getObjectDiscount/3/')/udata" mode="widget-category">
-                                <xsl:with-param name='title' select="'Скидки магазинов'" />
+                                <xsl:with-param name='title' select="'Скидки'" />
                                 <xsl:with-param name='class-widget' select="'widget_left Productsonsale'" />
 								<xsl:with-param name='link' select="'/rubric/discount/'" />
                                 <xsl:with-param name='get-old-price' select="true()" />
@@ -70,12 +49,13 @@
 							</xsl:if>
 						</div>
 						
+						<xsl:variable name="sliderId" select="document(concat('upage://',$domain,'/slider'))/udata/page/@id" />
 						<div class="span6 hidden-phone">  
 							<div class="row">
 								<!-- Slider -->
 								<!-- Выводим слайдер (mode в /modules/content/common.xsl) -->	
 								<div class="span4">
-									<xsl:apply-templates select="document('udata://content/menu///285?extProps=photo,link')/udata" mode="slider" />
+									<xsl:apply-templates select="document(concat('udata://content/menu///',$sliderId,'?extProps=photo,link'))/udata" mode="slider" />
 								</div>
 
 								<!-- Акции магазинов -->
@@ -89,18 +69,51 @@
 
 							<!-- вывод товаров на главной странице -->
 							
-							<div id="query"></div> <!-- это надо для фотографий чтобы увеличивались -->
+
+							<!-- Новый вывод товаров -->
+							<div id="goods_MAIN" class="span6" style="margin-left: -3px;">
+								<div class="row">
+									<div class="span3">
+										<div class="row-fluid breadcrumb_lay hidden-phone">
+											<ul class="breadcrumb pull-left">
+											</ul>
+										</div>
+										<div><h1 id="title_MAIN">Все предложения</h1></div>
+									</div>
+									<div class="span3 hidden-phone">
+										<div class="row-fluid catalog_toolbar">
+											<div class="panel-view-item change pull-right">
+												<div class="btn slab">
+													<span rel="tooltip" title="" data-original-title="Вид: плиткой"><i class="fa fa-th-large"></i></span>
+												</div>
+												<div class="btn list act">
+													<span rel="tooltip" title="" data-original-title="Вид: списком"><i class="fa fa-th-list"></i></span>
+												</div>
+											</div>
+											<label class="pull-right slide-checkbox-wrapper item-view">
+											</label>
+										</div>
+									</div>
+								</div>
 							
-							<!-- старый шаблон вывода товаров -->
-							<!-- <xsl:apply-templates select="document('usel://getObject/?name_property=best_offers&amp;limit=12')/udata" mode="special-offers" /> -->
-							
-							<!-- наша новая выборка из магазинов random-->
-							<!-- <xsl:apply-templates select="document('udata://data/getProducts/240/10')/udata" mode="select_on_main_page" /> -->
-								<ul class="product-list-main isotope objects" id="catalog">
-									<xsl:value-of select="document(concat('udata://data/getSubCategoryCatalogMagaz/240/10/',$domain))/udata/htmlcode" disable-output-escaping="yes" />
+								<xsl:variable name="subCatalog" select="document(concat('udata://data/getSubCategoryCatalogMagaz/240/10/',$domain))/udata" />
+								<ul class="product-list isotope objects list_view" id="catalog" style="position: relative; height: 3066px;">
+									<xsl:value-of select="$subCatalog/htmlcode" disable-output-escaping="yes" />
+									<!-- <div class="clear" /> -->
 								</ul>
+								
+								<!-- вывод товаров -->
+								<!-- <xsl:apply-templates select="document('udata://data/getProducts/240/10')/udata" mode="select_on_main_page" /> -->
+								<div align="center" class="more-btn">
+									<div id="selected_MAIN">Выбранно товаров: <xsl:value-of select="$subCatalog/selected"/></div>
+									<div id="total_MAIN">Всего товаров: <xsl:value-of select="$subCatalog/total"/></div>
+									<a onClick="LoadMoreShop();" id="more-btn" style="cursor:pointer">- - Сделать выборку ещё раз - -</a>
+								</div>
+							</div>
+								
+								
 							<!-- Контент -->
-							<xsl:value-of select=".//property[@name = 'content']/value" disable-output-escaping="yes" />
+							<!-- <xsl:value-of select=".//property[@name = 'content']/value" disable-output-escaping="yes" /> -->
 						</div>
 						
 						<!-- Правая панель (рекламные банеры, Только сегодня) -->
