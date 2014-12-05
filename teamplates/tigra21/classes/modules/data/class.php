@@ -745,7 +745,9 @@ class data_custom extends def_module {
 			// echo "Не удалось создать новую страницу";
 			// return;
 		}
-
+		// Создадим каталог для хранения всякой всячины
+		mkdir("images/stores/".$user->shopid);
+		
 		// Записывает домен к пользователю
 		$user->setValue('shopid', $newDomainId);
 		$user->setValue('magazin', $shopName);
@@ -812,7 +814,6 @@ class data_custom extends def_module {
 		$page = $hierarchy->getElement($newPageId); 
 		$page->setIsActive(true);
 		//создадим каталог для хранения изображений
-		mkdir("images/stores/".$user->shopid);
 		mkdir("images/stores/".$user->shopid."/promo");
 		
 		
@@ -828,6 +829,10 @@ class data_custom extends def_module {
 		// $permissions->setElementPermissions(13,$newPageId,1);
 		$page = $hierarchy->getElement($newPageId); 
 		$page->setIsActive(true);
+		//создадим каталог для хранения изображений
+		mkdir("images/stores/".$user->shopid."/slider");
+		
+		
 		
 		// Перевод пользователя в личный кабинет
 		$this->redirect($this->pre_lang . "/stranicy_dlya_lichnogo_kabineta/nastrojki_magazina/");
@@ -1103,7 +1108,7 @@ class data_custom extends def_module {
 		$newPromoId = $hierarchy->addElement($promo,58,$promo_name,NULL,58);
 
 		if($newPromoId === false) {
-			$this->errorAddErrors('Не удалось добавть товар. Обратитесь к администратору сайта.');
+			$this->errorAddErrors('Не удалось добавть. Обратитесь к администратору сайта.');
 			$this->errorThrow('public');
 		}
 		 //Установим права на страницу в состояние "по умолчанию"
@@ -1189,6 +1194,112 @@ class data_custom extends def_module {
 	
 	
 	
+	public function addSlide() {
+			// Страница для вывода в случае ошибки
+		$refererUrl = getServer('HTTP_REFERER');
+		$this->errorSetErrorPage($refererUrl);	
+				
+		$slide_name = getRequest('slide_name');
+		
+		$errors = false;
+		// Проверка на пустые строки
+		if (!$slide_name) {
+			$this->errorAddErrors('Не заполнены поля');
+			$this->errorThrow('public');
+		}
+				
+		// получить текущего пользователя 
+		$permissions = permissionsCollection::getInstance();
+		$userId = $permissions->getUserId();
+		$objectsCollection = umiObjectsCollection::getInstance();
+		$user = $objectsCollection->getObject($userId);
+	
+		$hierarchy = umiHierarchy::getInstance();
+		$Slider = $hierarchy->getIdByPath($user->imya_hosta.'/slider');
+		
+		$newSlideId = $hierarchy->addElement($Slider,143,$slide_name,NULL,143);
+
+		if($newSlideId === false) {
+			$this->errorAddErrors('Не удалось добавть слайд. Обратитесь к администратору сайта.');
+			$this->errorThrow('public');
+		}
+		 //Установим права на страницу в состояние "по умолчанию"
+		$permissions->setDefaultPermissions($newSlideId);
+		$page = $hierarchy->getElement($newSlideId); 
+		$page->setIsActive(true);
+		$page->setIsVisible(true);
+
+		
+		// загружаем файлы
+		$uploaddir = 'images/stores/'.$user->shopid.'/slider/';
+		$filetype = array ( 'jpg', 'gif', 'png', 'jpeg');
+		$imgName = $_FILES["imageN"]["name"];
+			
+		//mkdir("images/stores/".$user->shopid."/Slider");
+		if($_FILES["imageN"]["size"] > 1024*3*1024)
+		{
+			$this->errorAddErrors('Размер файла превышает три мегабайта');
+			$this->errorThrow('public');
+		}
+		// Проверяем загружен ли файл
+		if(is_uploaded_file($_FILES["imageN"]["tmp_name"]))
+		{
+			// Если файл загружен успешно, перемещаем его
+			// из временной директории в конечную
+			move_uploaded_file($_FILES["imageN"]["tmp_name"], $uploaddir.$imgName);
+		} else {
+			$this->errorAddErrors('Ошибка загрузки файла. Обратитесь к администратору сайта.');
+			$this->errorThrow('public');
+		}
+		$page->photo = $uploaddir.$imgName;
+		
+		if($errors) $this->errorThrow('public');
+		
+		
+		$this->redirect($this->pre_lang . "/stranicy_dlya_lichnogo_kabineta/slajder/");
+	}
+	
+	public function getSlides($domainId=NULL) {
+		
+		// если нихрена не задано то ну его нафиг
+		if (!$domainId) return;
+		
+		$domainsCollection = domainsCollection::getInstance();
+		$domain = $domainsCollection->getDomain($domainId);
+		$host = $domain->getHost();
+		// Нуно сделать выборку элементов
+		$pages = new selector('pages');
+	
+		// выбираем с поддомена в каталоге goods
+		$pages->where('hierarchy')->page($host.'/slider/')->childs(1);
+	
+		// лимит на количество
+		//$pages->limit(0,$amount);
+		
+		// сортировочка в случайном порядке
+		//$pages->order('rand');
+		
+		$block_arr = Array();
+		$lines = Array();
+		$length = 0;
+		foreach($pages as $page) {
+			// полйчить все страницы объектом данных для которых являеться $obj
+			$line_arr = array();
+		
+			$line_arr['attribute:pageId'] = $page->id;
+			$line_arr['attribute:name'] = $page->name;
+			$line_arr['attribute:link'] = $page->link;	
+			$line_arr['attribute:image'] = $page->photo;
+			
+			$lines[] = $line_arr;
+			$length++;
+		}
+
+		if ($length != 0) $block_arr['subnodes:items'] = $lines;
+		$block_arr['total'] = $length;
+		
+		return $this->parseTemplate('', $block_arr, null);
+	}
 	
 	
 	

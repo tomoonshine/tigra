@@ -330,4 +330,68 @@
 	</xsl:template>
 	
 	
+	
+	<!-- Шаблон на вывод во вкладке "слайдер" -->
+	<xsl:template match="result[page/@id='914']">
+		
+		
+		<xsl:apply-templates select="document(concat('udata://data/getSlides/',$user-info//property[@name='shopid']/value))"/>
+		<form action="http://tigra21.ru/data/addSlide"   method="post" enctype="multipart/form-data" onsubmit="site.forms.data.save(this); return site.forms.data.check(this);">
+			<table class="table" >
+			<tbody>
+				<tr>
+					<th>Название</th>
+					<td>
+						<div class="control-group required">
+							<input type="text" name="slide_name" value=""/>
+						</div>
+					</td>
+					<td>
+						
+					</td>
+				</tr> 
+				<tr>
+					<th>Фотография</th>
+					<td>
+						
+						<input type="file" name="imageN"  accept="image/jpeg,image/png,image/gif"/>
+					</td>
+					<td></td>
+				</tr>
+				<tr>
+					<th></th>
+					<td>
+						<input type="submit" class="btn btn-turquoise btn-small" value="Добавить" />
+					</td>
+					<td>
+					</td>
+				</tr>						
+			</tbody>
+			</table>
+		</form>
+	</xsl:template>
+	
+	<xsl:template match="udata[@module='data'][@method='getSlides']">
+		<xsl:apply-templates select="items/item" />
+	</xsl:template>
+	
+	<xsl:template match="udata[@method='getSlides']//item">
+		<xsl:value-of select="@name" />
+		<br/>
+		<xsl:if test="@image">
+			Фотография:
+			<br/>
+			<xsl:call-template name="all-thumbnail-path">
+				<xsl:with-param name="width" select="'68'" />
+				<xsl:with-param name="height" select="'65'" />
+				<xsl:with-param name="path" select="concat('/',@image)" />
+				<xsl:with-param name="quality" select="'100'" />
+				<xsl:with-param name="full" select="'care'" />
+				<xsl:with-param name="gallery-split" select="true()" />
+				<xsl:with-param name="settings_catalog" select="$settings_catalog" />
+			</xsl:call-template>
+			<br/>
+		</xsl:if>
+	</xsl:template>
+	
 </xsl:stylesheet>
