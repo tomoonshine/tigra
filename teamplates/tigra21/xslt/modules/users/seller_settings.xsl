@@ -20,9 +20,8 @@
 	
 	<!-- Шаблон на вывод настроек магазина -->
 	<xsl:template match="result[page/@id='745']">
-		<xsl:variable name="user" select="document(concat('uobject://',user/@id))" />
 		<xsl:choose>
-			<xsl:when test="$user//property[@name = 'shopid']">
+			<xsl:when test="$user-info//property[@name = 'shopid']">
 				<form action="http://tigra21.ru/data/changeShopName"  method="post" enctype="multipart/form-data" id="settings-form">
 					<table class="table" id="acc_info">
 						<tbody>
@@ -98,12 +97,11 @@
 	
 	<!-- Шаблон на вывод во вкладке товары -->
 	<xsl:template match="result[page/@id='866']">
-		<xsl:variable name="user" select="document(concat('uobject://',user/@id))" />
 		<xsl:choose>
-			<xsl:when test="$user//property[@name='shopid']/value" >
+			<xsl:when test="$user-info//property[@name='shopid']/value" >
 				<!-- Вывод всех товаров -->
-				<!-- <xsl:value-of select="$user//property[@name='shopid']/value" /> -->
-				<xsl:apply-templates select="document(concat('udata://data/getShopProducts/',$user//property[@name='shopid']/value))"/>
+				<!-- <xsl:value-of select="$user-info//property[@name='shopid']/value" /> -->
+				<xsl:apply-templates select="document(concat('udata://data/getShopProducts/',$user-info//property[@name='shopid']/value))"/>
 				<!-- Добавить товар -->
 				<p class="lead">Добавьте товар</p>
 				<form action="http://tigra21.ru/data/addNewProduct" method="post" enctype="multipart/form-data" onsubmit="site.forms.data.save(this); return site.forms.data.check(this);">
@@ -224,6 +222,111 @@
 	
 	<xsl:template match="udata[@method='getSubCategory']//item" mode="seller_setting">
 		<option value="{@id}"><xsl:value-of select="@name" /></option>
+	</xsl:template>
+	
+	
+	
+	<!-- Шаблон на вывод во вкладке "информация для посетителей" -->
+	<xsl:template match="result[page/@id='895']">
+		<xsl:variable name="mainPage" select="document(concat('upage://',$user-info//property[@name='imya_hosta']/value,'/main'))" />
+		<form action="http://tigra21.ru/data/setInform"  method="post" enctype="multipart/form-data" id="settings-form">
+		<table class="table" id="acc_info">
+			<tbody>
+				<tr>
+					<th>Юридический адрес</th>
+					<td>
+						<input type="text" name="legal_address"  readonly="{$mainPage//property[@name='legal_address']/value}" value=""/>
+					</td>
+				</tr> 
+				<tr>
+					<th>Контент</th>
+					<td>
+						<textarea name="content"  />
+					</td>
+				</tr>
+				<tr>
+					<th></th>
+					<td>
+						<a href="#" class="btn btn-turquoise btn-small" id="lk-edit-btn">Редактировать</a>    
+						<input type="button" class="hide btn btn-small" id="lk-cancel-btn" value="Отменить" />
+						<input type="submit" class="hide btn btn-turquoise btn-small" value="Cохранить" />
+					</td>
+				</tr>
+			</tbody>
+		</table>
+		</form>
+	</xsl:template>
+	
+	<!-- Шаблон на вывод во вкладке "акции, новости" -->
+	<xsl:template match="result[page/@id='896']">
+		
+		<!-- <xsl:variable name="mainPage" select="document(concat('upage://',$user-info//property[@name='imya_hosta']/value,'/main'))" /> -->
+		<xsl:apply-templates select="document(concat('udata://data/getPromoAndNews/',$user-info//property[@name='shopid']/value))"/>
+		<form action="http://tigra21.ru/data/addPromo"   method="post" enctype="multipart/form-data" onsubmit="site.forms.data.save(this); return site.forms.data.check(this);">
+			<table class="table" >
+			<tbody>
+				<tr>
+					<th>Название</th>
+					<td>
+						<div class="control-group required">
+							<input type="text" name="promo_name" value=""/>
+						</div>
+					</td>
+					<td>
+						
+					</td>
+				</tr> 
+				<tr>
+					<th>Фотография</th>
+					<td>
+						
+						<input type="file" name="imageN"  accept="image/jpeg,image/png,image/gif"/>
+					</td>
+					<td></td>
+				</tr>
+				<tr>
+					<th>Описание</th>
+					<td>
+						<textarea name="description">
+						</textarea>
+					</td>
+					<td></td>
+				</tr>
+				<tr>
+					<th></th>
+					<td>
+						<input type="submit" class="btn btn-turquoise btn-small" value="Добавить" />
+					</td>
+					<td>
+					</td>
+				</tr>						
+			</tbody>
+			</table>
+		</form>
+	</xsl:template>
+	
+	<xsl:template match="udata[@module='data'][@method='getPromoAndNews']">
+		<xsl:apply-templates select="items/item" />
+	</xsl:template>
+	
+	<xsl:template match="udata[@method='getPromoAndNews']//item">
+		<a href="{@link}"><xsl:value-of select="@name" /> </a>
+		Описание: <xsl:value-of select="@content" />
+		<br/>
+		<xsl:if test="@image">
+			Фотография:
+			<br/>
+			<xsl:call-template name="all-thumbnail-path">
+				<xsl:with-param name="width" select="'68'" />
+				<xsl:with-param name="height" select="'65'" />
+				<xsl:with-param name="path" select="concat('/',@image)" />
+				<xsl:with-param name="quality" select="'100'" />
+				<xsl:with-param name="full" select="'care'" />
+				<xsl:with-param name="gallery-split" select="true()" />
+				<xsl:with-param name="settings_catalog" select="$settings_catalog" />
+			</xsl:call-template>
+			<br/>
+		</xsl:if>
 	</xsl:template>
 	
 	

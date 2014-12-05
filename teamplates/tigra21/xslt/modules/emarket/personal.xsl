@@ -4,7 +4,7 @@
 <xsl:stylesheet	version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 	
 	<!-- cabinet templates -->
-	<xsl:template match="result[(@module='users' and @method='settings') or (@module='emarket' and @method='ordersListStatus') or (@module='dispatches' and @method='subscribe') or (page/@id='745') or (page/@id='866')]" mode="main_template">
+	<xsl:template match="result[(@module='users' and @method='settings') or (@module='emarket' and @method='ordersListStatus') or (@module='dispatches' and @method='subscribe') or (page/@id='745') or (page/@id='866') or (page/@id='895') or (page/@id='896')]" mode="main_template">
 		<!-- Static page 1 -->
 		<section class="static_page_1">
 			<div class="container">
@@ -48,18 +48,18 @@
 												<a href="http://tigra21.ru/nastrojki_magazina/" title="Настройки магазина" class="title">Настройки магазина</a>
 											</li>
 											<li>
-												<!-- <xsl:if test="@module='dispatches' and @method='subscribe'"><xsl:attribute name="class">active</xsl:attribute></xsl:if> -->
+												<xsl:if test="page/@id='895'"><xsl:attribute name="class">active</xsl:attribute></xsl:if>
+												<a href="http://tigra21.ru/stranicy_dlya_lichnogo_kabineta/informaciya_dlya_posetitelej/" title="Информация для посетителей" class="title">Информация для посетителей</a>
+											</li>
+											<li>
 												<xsl:if test="page/@id='866'"><xsl:attribute name="class">active</xsl:attribute></xsl:if>
 												<a href="http://tigra21.ru/tovary/" title="Товары" class="title">Товары</a>
 											</li>
 											<li>
-												<!-- <xsl:if test="@module='dispatches' and @method='subscribe'"><xsl:attribute name="class">active</xsl:attribute></xsl:if> -->
-												<a href="#" title="Акции" class="title">Акции, Новости</a>
+												<xsl:if test="page/@id='896'"><xsl:attribute name="class">active</xsl:attribute></xsl:if>
+												<a href="http://tigra21.ru/stranicy_dlya_lichnogo_kabineta/akcii_i_novosti/" title="Акции" class="title">Акции, Новости</a>
 											</li>
-											<li>
-												<!-- <xsl:if test="@module='dispatches' and @method='subscribe'"><xsl:attribute name="class">active</xsl:attribute></xsl:if> -->
-												<a href="#" title="Информация об организации" class="title">Информация об организации</a>
-											</li>
+											
 											<li>
 												<!-- <xsl:if test="@module='dispatches' and @method='subscribe'"><xsl:attribute name="class">active</xsl:attribute></xsl:if> -->
 												<a href="#" title="Рассылки" class="title">Рассылки</a>

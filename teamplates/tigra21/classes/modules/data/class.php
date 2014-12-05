@@ -136,7 +136,7 @@ class data_custom extends def_module {
 					// $str = $str . '<a onclick="changeActive(this);';
 					// $str = $str . 'getMagazCatalog('. $child['id'] . ',10,"' . 'domain' . '");"';
 					// $str = $str . 'class="title" >'
-					$str = $str . '<a onclick="changeActive(this);getMagazCatalog('.$child["id"].',10,'."'". $domain."'". ')" class="title" >';
+					$str = $str . '<a onclick="changeActive(this);getMagazCatalog('.$child["id"].',10,'."'". $domain."'". ')" class="title" title="' . $child["name"] . '" >';
 					$str = $str. $child["name"];
 					if($child['chld']) $str = $str .'<i class="fa fa-chevron-down"></i>';
 					$str = $str.'</a>';
@@ -488,17 +488,23 @@ class data_custom extends def_module {
 		if (!$categoryID) return;
 		if ($amount == 0) return;
 		if (!$domain) return;
-
+		
+		$typesCollection = umiObjectTypesCollection::getInstance();
+		$objChldren = $typesCollection->getSubTypesList($categoryID);
+		$sheet = false;
+		// узнаем не на лист ли перадали
+		if (count($objChldren) == 0) $sheet = true;
 		
 		// массив категорий по каторым нужно сделать отбор
-		$categories = array($categoryID);
+		//$categories = array($categoryID);
 		// получаем все подкатегории
-		$categories = array_merge($categories, $this->getChildren($categoryID));
+		//$categories = array_merge($categories, $this->getChildren($categoryID));
 		
 		// Нуно сделать выборку элементов
 		$pages = new selector('pages');
 		//$pages->types('object-type')->id($categoryID);
-		foreach($categories as $cat) $pages->types('object-type')->id($cat);
+		//foreach($categories as $cat) $pages->types('object-type')->id($cat);
+		$pages->types('object-type')->id($categoryID);
 		$pages->types('hierarchy-type')->name('catalog', 'object');
 		$pages->where('hierarchy')->page($domain.'/goods/')->childs(1);
 	
@@ -509,9 +515,16 @@ class data_custom extends def_module {
 		// не нужны объекты без имён
 		//$pages->where('name')->isnotnull(false); 
 		// количество элементов для отбора
-		$pages->limit(0,$amount);
+		//$pages->limit(0,$amount);
 		// сортировочка в случайном порядке
 		$pages->order('rand');
+		
+		
+		// понадобиться для картинок	
+		if (!$oContentMdl = cmsController::getInstance()->getModule("content")) { 
+			$this->errorAddErrors('Не удалось подключить модуль content');
+			$this->errorThrow('public');
+		}
 		
 		// будем работать с хиерархией
 		$hierarchy = umiHierarchy::getInstance();
@@ -521,11 +534,9 @@ class data_custom extends def_module {
 		$block_arr = Array();
 		$htmlcode = ' ';
 		$length = 0;
+		// если лист то поболе вывести нужно
+		if ($sheet) $amount = 100;
 		foreach($pages as $page) {
-			// полйчить все страницы объектом данных для которых являеться $obj
-			//$pageId = $hierarchy->getObjectInstances($obj->id, true);
-			//$page = $hierarchy->getElement($pageId[0]);
-			
 			// если имеються картинки то добавляем первую из всех
 			$src = ' ';
 			$jsonFILE = $page->tigra21_image_gallery;
@@ -533,43 +544,132 @@ class data_custom extends def_module {
 			if(!empty($jsonFILE)) {
 				$src= $jsonFILE['0']['src'];
 			}
-			//$host = $domainsCollection->getDomain($page->getDomainId())->getHost();
-			$mainPageId = $hierarchy->getIdByPath($domain.'/main/');
+			$host = $domainsCollection->getDomain($page->getDomainId())->getHost();
+			$mainPageId = $hierarchy->getIdByPath($host.'/main/');
 			$mainPage = $hierarchy->getElement($mainPageId);
+			$imgArray = $oContentMdl->makeThumbnailCare('.'.$src,270,340,'void',0,1,0);
 			
 			// структура html
-			$htmlcode =	$htmlcode . '<li umi:element-id="' . $page->id . '" umi:region="row" class="standard">'
-							. '<div class="image">'
-								. '<a title="' . $page->name .'" umi:element-id="' . $page->id . '" class="image-link" href="' .  $page->link . '">'
-									. '<div style="width:170px; height: 170px" class="image_crop_block">'
-										. '<img width="170" title="' . $page->name . '" alt="' . $page->name . '" class="primary" src="' . $src .'"></img>'
-									. '</div>'
-								. '</a>'
-								. '</div>'
-								. '<div class="title">'
-									. '<a title="' .$mainPage->nazvanie_magazina . '" href="http://'. $domain . '">'
-										. '<h3>'.$mainPage->nazvanie_magazina.'</h3>'
-									. '</a>'
-									. '<a title="товар 2" href="'. $page->link .'">'
-										. '<h3 umi:field-name="name" umi:element-id="'. $page->id.'" class="u-eip-edit-box" title="Нажмите Ctrl+левая кнопка мыши, чтобы перейти по ссылке.">товар 2</h3>'
-										. '<div class="prices">'
-											. '<span class="price">'.$page->price.'</span> руб'
-										. '</div>'
-										. '</a>'
-									. '<div class="btn_line add_from_list btn_line_">'
-										. '<i class="fa fa-spinner fa-spin"></i>'
-									. '</div>'
-									. '<div style="margin:20px"></div>'
-								.' </div>'
-						. '</li>';
-			
+			$htmlcode =	$htmlcode . '<li class="standard">'
+				. '<div class="image">'
+					. '<a title="' . $page->name .'" umi:element-id="' . $page->id . '" class="image-link" href="' .  $page->link . '">'
+						. '<div class="image_crop_block">'
+							.'<img src="'.$imgArray['src'].'" width="270" height="340" class="primary" data-zoom-image=" " alt="' . $page->name . '" title="' . $page->name . '">'
+						. '</div>'
+					. '</a>'
+					. '<div class="electee-wrap">
+						<a href="/users/electee_item/'
+						.$page->id
+						.'" class="fa fa-star-o add_electee_item" data-delete-url="/users/electee_delete/'
+						.$page->id
+						.'" data-add-url="/users/electee_item/'
+						.$page->id
+						.'" data-untext="Отменить" data-text="В избранное" data-id-sticky="#sticky-electee" data-placement="right" title="В избранное" data-original-title="В избранное"></a>
+					</div>'
+					. '</div>'
+					. '<div class="title">'
+						. '<a title="" href="'. $page->link .'">'
+							. '<h3 umi:field-name="name" umi:element-id="'. $page->id.'" class="u-eip-edit-box" title="Нажмите Ctrl+левая кнопка мыши, чтобы перейти по ссылке.">'
+							. $page->name .'</h3>'
+							. '<div class="prices">'
+								. '<span class="price">'.$page->price.'</span> руб'
+							. '</div>'
+						. '</a>'
+						.'<div class="item_properties">
+							<p>Характеристики:</p>
+							<ul class="list-border">
+							<li>?Бренд: Bruno Amaranti</li>
+							<li>?Материал: Кожа</li>
+							<li>?Цвет: Черный</li>
+							</ul>
+						</div>'
+						.'<div class="btn_line add_from_list btn_line_'.$page->id.'">
+							<div class="prices"> <span class="price">'.$page->price.'</span> руб</div>
+							<div class="shopAdress_MainPage">'
+							.$mainPage->adress
+							.'</div>
+							<div>
+							<a href="http://'. $host . '" title="'.$mainPage->nazvanie_magazina.'" class="btn btn-small btn-primary button options basket_list ">'
+							.$mainPage->nazvanie_magazina
+							.'</a>
+							</div>
+							<i class="fa fa-spinner fa-spin"></i>
+						</div>'
+						
+						
+						. '<div class="btn_line add_from_list btn_line_">'
+							. '<i class="fa fa-spinner fa-spin"></i>'
+						. '</div>'
+						. '<div style="margin:20px"></div>'
+					.' </div>'
+			. '</li>';
+	
 			$length++;
+			if ($length == $amount) break;
 		}
-
-		// if ($length != 0) $block_arr['subnodes:items'] = $lines;
-		$block_arr['total'] = $length;
+		
+		$block_arr['sheet'] = $sheet;
+		$block_arr['total'] = $pages->length();
+		$block_arr['selected'] = $length;
 		$block_arr['htmlcode'] = $htmlcode . '<div class="clear"></div>';
 		return $this->parseTemplate('', $block_arr, null);
+		
+		
+		
+		
+		// // Переменный для формирования выходной структуры xml
+		// $block_arr = Array();
+		// $htmlcode = ' ';
+		// $length = 0;
+		// foreach($pages as $page) {
+			// // полйчить все страницы объектом данных для которых являеться $obj
+			// //$pageId = $hierarchy->getObjectInstances($obj->id, true);
+			// //$page = $hierarchy->getElement($pageId[0]);
+			
+			// // если имеються картинки то добавляем первую из всех
+			// $src = ' ';
+			// $jsonFILE = $page->tigra21_image_gallery;
+			// $jsonFILE = json_decode($jsonFILE, true);
+			// if(!empty($jsonFILE)) {
+				// $src= $jsonFILE['0']['src'];
+			// }
+			// //$host = $domainsCollection->getDomain($page->getDomainId())->getHost();
+			// $mainPageId = $hierarchy->getIdByPath($domain.'/main/');
+			// $mainPage = $hierarchy->getElement($mainPageId);
+			
+			// // структура html
+			// $htmlcode =	$htmlcode . '<li umi:element-id="' . $page->id . '" umi:region="row" class="standard">'
+							// . '<div class="image">'
+								// . '<a title="' . $page->name .'" umi:element-id="' . $page->id . '" class="image-link" href="' .  $page->link . '">'
+									// . '<div style="width:170px; height: 170px" class="image_crop_block">'
+										// . '<img width="170" title="' . $page->name . '" alt="' . $page->name . '" class="primary" src="' . $src .'"></img>'
+									// . '</div>'
+								// . '</a>'
+								// . '</div>'
+								// . '<div class="title">'
+									// . '<a title="' .$mainPage->nazvanie_magazina . '" href="http://'. $domain . '">'
+										// . '<h3>'.$mainPage->nazvanie_magazina.'</h3>'
+									// . '</a>'
+									// . '<a title="товар 2" href="'. $page->link .'">'
+										// . '<h3 umi:field-name="name" umi:element-id="'. $page->id.'" class="u-eip-edit-box" title="Нажмите Ctrl+левая кнопка мыши, чтобы перейти по ссылке.">товар 2</h3>'
+										// . '<div class="prices">'
+											// . '<span class="price">'.$page->price.'</span> руб'
+										// . '</div>'
+										// . '</a>'
+									// . '<div class="btn_line add_from_list btn_line_">'
+										// . '<i class="fa fa-spinner fa-spin"></i>'
+									// . '</div>'
+									// . '<div style="margin:20px"></div>'
+								// .' </div>'
+						// . '</li>';
+			
+			// $length++;
+		// }
+
+		// // if ($length != 0) $block_arr['subnodes:items'] = $lines;
+		// $block_arr['total'] = $length;
+		// $block_arr['htmlcode'] = $htmlcode . '<div class="clear"></div>';
+		// return $this->parseTemplate('', $block_arr, null);
 	}
 	
 	
@@ -704,6 +804,23 @@ class data_custom extends def_module {
 		$newPageId = $hierarchy->addElement(0,31,"Акции и новости магазина","promotionsandnews",31,$newDomainId,$defLangId,$newTmplId);
 		if($newPageId === false) {
 			$this->errorAddErrors('Не удалось создать ленту новостей. Обратитесь к администратору сайта (: бывает такое на нашей планете.');
+			$this->errorThrow('public');
+		}
+		//Установим права на страницу в состояние "по умолчанию"
+		$permissions->setDefaultPermissions($newPageId);
+		// $permissions->setElementPermissions(13,$newPageId,1);
+		$page = $hierarchy->getElement($newPageId); 
+		$page->setIsActive(true);
+		//создадим каталог для хранения изображений
+		mkdir("images/stores/".$user->shopid);
+		mkdir("images/stores/".$user->shopid."/promo");
+		
+		
+		
+		// Добавим слаааайййййдерррррррррррррррррррр  
+		$newPageId = $hierarchy->addElement(0,55,"Слайдер","slider",55,$newDomainId,$defLangId,$newTmplId);
+		if($newPageId === false) {
+			$this->errorAddErrors('Не удалось создать слайдер. Обратитесь к администратору сайта (: Нет ничего совершенного');
 			$this->errorThrow('public');
 		}
 		//Установим права на страницу в состояние "по умолчанию"
@@ -879,7 +996,7 @@ class data_custom extends def_module {
 		$objectsCollection = umiObjectsCollection::getInstance();
 		$user = $objectsCollection->getObject($userId);
 		
-		$domainsCollection = domainsCollection::getInstance(); 
+		//$domainsCollection = domainsCollection::getInstance(); 
 
 		$hierarchy = umiHierarchy::getInstance();
 		$goodsId = $hierarchy->getIdByPath($user->imya_hosta.'/goods');
@@ -918,6 +1035,7 @@ class data_custom extends def_module {
 					
 				} else {
 					$this->errorAddErrors('Не удалось загрузить картику.'.$imgName.' Тип не поддерживается.');
+					$errors = true;
 				
 				}
 			} else {
@@ -934,9 +1052,139 @@ class data_custom extends def_module {
 	}
 	
 	
+	public function setInform() {
+		// Страница для вывода в случае ошибки
+		$refererUrl = getServer('HTTP_REFERER');
+		$this->errorSetErrorPage($refererUrl);	
+		
+		$legal_address = getRequest('legal_address');
+		$content = getRequest('content');
+		
+		$errors = false;
+		
+		$permissions = permissionsCollection::getInstance();
+		$userId = $permissions->getUserId();
+		$objectsCollection = umiObjectsCollection::getInstance();
+		$user = $objectsCollection->getObject($userId);
+		
+		$hierarchy = umiHierarchy::getInstance();
+		$mainId = $hierarchy->getIdByPath($user->imya_hosta.'/main');
+		$page = $hierarchy->getElement($mainId); 
+		$page->legal_address = $legal_address;
+		$page->content= $content;
+		
+		$this->redirect($this->pre_lang . "/stranicy_dlya_lichnogo_kabineta/informaciya_dlya_posetitelej/");
+	}
+	
+	public function addPromo() {
+			// Страница для вывода в случае ошибки
+		$refererUrl = getServer('HTTP_REFERER');
+		$this->errorSetErrorPage($refererUrl);	
+				
+		$promo_name = getRequest('promo_name');
+		$description = getRequest('description');
+		
+		$errors = false;
+		// Проверка на пустые строки
+		if ((!$promo_name) | (!$description)) {
+			$this->errorAddErrors('Не заполнены поля');
+			$this->errorThrow('public');
+		}
+				
+		// получить текущего пользователя 
+		$permissions = permissionsCollection::getInstance();
+		$userId = $permissions->getUserId();
+		$objectsCollection = umiObjectsCollection::getInstance();
+		$user = $objectsCollection->getObject($userId);
+	
+		$hierarchy = umiHierarchy::getInstance();
+		$promo = $hierarchy->getIdByPath($user->imya_hosta.'/promotionsandnews');
+		
+		$newPromoId = $hierarchy->addElement($promo,58,$promo_name,NULL,58);
+
+		if($newPromoId === false) {
+			$this->errorAddErrors('Не удалось добавть товар. Обратитесь к администратору сайта.');
+			$this->errorThrow('public');
+		}
+		 //Установим права на страницу в состояние "по умолчанию"
+		$permissions->setDefaultPermissions($newPromoId);
+		$page = $hierarchy->getElement($newPromoId); 
+		$page->setIsActive(true);
+		$page->content = $description;
+		
+		// загружаем файлы
+		$uploaddir = 'images/stores/'.$user->shopid.'/promo/';
+		$filetype = array ( 'jpg', 'gif', 'png', 'jpeg');
+		$imgName = $_FILES["imageN"]["name"];
+			
+		//mkdir("images/stores/".$user->shopid."/promo");
+		if($_FILES["imageN"]["size"] > 1024*3*1024)
+		{
+			$this->errorAddErrors('Размер файла превышает три мегабайта');
+			$this->errorThrow('public');
+		}
+		// Проверяем загружен ли файл
+		if(is_uploaded_file($_FILES["imageN"]["tmp_name"]))
+		{
+			// Если файл загружен успешно, перемещаем его
+			// из временной директории в конечную
+			move_uploaded_file($_FILES["imageN"]["tmp_name"], $uploaddir.$imgName);
+		} else {
+			$this->errorAddErrors('Ошибка загрузки файла. Обратитесь к администратору сайта.');
+			$this->errorThrow('public');
+		}
+		$page->anons_pic = $uploaddir.$imgName;
+		
+		if($errors) $this->errorThrow('public');
+		
+		
+		$this->redirect($this->pre_lang . "/stranicy_dlya_lichnogo_kabineta/akcii_i_novosti/");
+	}
 	
 	
+	public function getPromoAndNews($domainId=NULL) {
+		
+		// если нихрена не задано то ну его нафиг
+		if (!$domainId) return;
+		
+		$domainsCollection = domainsCollection::getInstance();
+		$domain = $domainsCollection->getDomain($domainId);
+		$host = $domain->getHost();
+		// Нуно сделать выборку элементов
+		$pages = new selector('pages');
+		$pages->types('hierarchy-type')->name('news', 'item');
 	
+		// выбираем с поддомена в каталоге goods
+		$pages->where('hierarchy')->page($host.'/promotionsandnews/')->childs(1);
+	
+		// лимит на количество
+		//$pages->limit(0,$amount);
+		
+		// сортировочка в случайном порядке
+		//$pages->order('rand');
+		
+		$block_arr = Array();
+		$lines = Array();
+		$length = 0;
+		foreach($pages as $page) {
+			// полйчить все страницы объектом данных для которых являеться $obj
+			$line_arr = array();
+		
+			$line_arr['attribute:pageId'] = $page->id;
+			$line_arr['attribute:name'] = $page->name;
+			$line_arr['attribute:link'] = $page->link;	
+			$line_arr['attribute:image'] = $page->anons_pic;
+			$line_arr['attribute:content']  = $page->content;
+			
+			$lines[] = $line_arr;
+			$length++;
+		}
+
+		if ($length != 0) $block_arr['subnodes:items'] = $lines;
+		$block_arr['total'] = $length;
+		
+		return $this->parseTemplate('', $block_arr, null);
+	}
 	
 	
 	

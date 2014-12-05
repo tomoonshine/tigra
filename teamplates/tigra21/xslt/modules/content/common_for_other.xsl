@@ -64,8 +64,10 @@
 <!-- 									<xsl:apply-templates select="document('udata://news/lastlist/37/notemplate/2/1/?extProps=anons_pic')/udata" mode="widget-stock" /> -->
 								</div>
 							</div>
-							
-							
+							<div class="span4">
+							<!-- Контент -->
+							<xsl:value-of select=".//property[@name = 'content']/value" disable-output-escaping="yes" />
+							</div>
 
 							<!-- вывод товаров на главной странице -->
 							
@@ -112,8 +114,7 @@
 							</div>
 								
 								
-							<!-- Контент -->
-							<!-- <xsl:value-of select=".//property[@name = 'content']/value" disable-output-escaping="yes" /> -->
+
 						</div>
 						
 						<!-- Правая панель (рекламные банеры, Только сегодня) -->
