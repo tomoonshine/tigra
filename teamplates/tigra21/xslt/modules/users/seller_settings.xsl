@@ -130,7 +130,7 @@
 							<th>Фотографии</th>
 							<td>
 								<input type="file" name="image[]" accept="image/jpeg,image/png,image/gif"/>
-								<input type="file" name="image[]" accept="image/jpeg,image/png,image/gif"/>
+								<!-- <input type="file" name="image[]" accept="image/jpeg,image/png,image/gif"/> -->
 							</td>
 							<td></td>
 						</tr>
@@ -319,7 +319,7 @@
 			<xsl:call-template name="all-thumbnail-path">
 				<xsl:with-param name="width" select="'68'" />
 				<xsl:with-param name="height" select="'65'" />
-				<xsl:with-param name="path" select="concat('/',@image)" />
+				<xsl:with-param name="path" select="@image" />
 				<xsl:with-param name="quality" select="'100'" />
 				<xsl:with-param name="full" select="'care'" />
 				<xsl:with-param name="gallery-split" select="true()" />
@@ -384,7 +384,7 @@
 			<xsl:call-template name="all-thumbnail-path">
 				<xsl:with-param name="width" select="'68'" />
 				<xsl:with-param name="height" select="'65'" />
-				<xsl:with-param name="path" select="concat('/',@image)" />
+				<xsl:with-param name="path" select="@image" />
 				<xsl:with-param name="quality" select="'100'" />
 				<xsl:with-param name="full" select="'care'" />
 				<xsl:with-param name="gallery-split" select="true()" />

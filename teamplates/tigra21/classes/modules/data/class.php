@@ -988,13 +988,36 @@ class data_custom extends def_module {
 		$price = getRequest('price');
 		$description = getRequest('description');
 		
-		$errors = false;
+		$errors = true;
 		// Проверка на пустые строки
 		if ((!$poductName) | (!$categoryId)) {
 			$this->errorAddErrors('Не заполнены поля');
 			$this->errorThrow('public');
 		}
+		
+		foreach ($_FILES["image"]["error"] as $key => $error) {
+			// Проверяем загружен ли файл
+			if($error == UPLOAD_ERR_OK)
+			{
+				$imgName = $_FILES["image"]["name"][$key];
+				if($_FILES["imageN"]["size"][$key] > 1024*3*1024)
+				{
+					$this->errorAddErrors('Размер файла '.$imgName.' превышает три мегабайта');
+					$errors = true;
+				}
+				else
+					if ($this->checkImageFile($imgName)) {
+						$errors = false;
+					}
+
 				
+			}
+		}
+		if($errors) {
+			$this->errorAddErrors('Ни одной фотографии загрузить не удалось. Проверте имя файла(только буквы латинского алфавита и цифры) размер(не более 3 мегабайт) и формат(jpg,jpeg,png,gif). ');
+			$this->errorThrow('public');
+		}
+		
 		// получить текущего пользователя 
 		$permissions = permissionsCollection::getInstance();
 		$userId = $permissions->getUserId();
@@ -1020,8 +1043,8 @@ class data_custom extends def_module {
 		$page->description= $description;
 		
 		// загружаем файлы
-		$filetype = array ( 'jpg', 'gif', 'png', 'jpeg');
 		mkdir("images/catalog/object/".$newPageId);
+		
 		$image_gallery = array();
 		foreach ($_FILES["image"]["error"] as $key => $error) {
 			$imageInGallery = array();
@@ -1031,18 +1054,25 @@ class data_custom extends def_module {
 				$imgName = $_FILES["image"]["name"][$key];
 				
 				$upfiletype = substr( $imgName,  strrpos( $imgName, "." ) + 1 );
-				if ( in_array ( $upfiletype, $filetype ) ) {
-					move_uploaded_file($_FILES["image"]["tmp_name"][$key], 'images/catalog/object/'.$newPageId.'/'.$imgName);
-					$imageInGallery['name'] = $imgName;
-					$imageInGallery['altName'] = $poductName;
-					$imageInGallery['src'] = '/images/catalog/object/'.$newPageId.'/'.$imgName;
-					$imageInGallery['type'] = $upfiletype;
-					
-				} else {
-					$this->errorAddErrors('Не удалось загрузить картику.'.$imgName.' Тип не поддерживается.');
+				if($_FILES["imageN"]["size"][$key] > 1024*3*1024)
+				{
+					$this->errorAddErrors('Размер файла '.$imgName.' превышает три мегабайта');
 					$errors = true;
-				
 				}
+				else				
+					if ($this->checkImageFile($imgName))
+					{
+						move_uploaded_file($_FILES["image"]["tmp_name"][$key], 'images/catalog/object/'.$newPageId.'/'.$imgName);
+						$imageInGallery['name'] = $imgName;
+						$imageInGallery['altName'] = $poductName;
+						$imageInGallery['src'] = '/images/catalog/object/'.$newPageId.'/'.$imgName;
+						$imageInGallery['type'] = $upfiletype;
+						
+					} else {
+						$this->errorAddErrors('Не удалось загрузить картику.'.$imgName.' Имя или тип файла не поддерживается. Имя должно состоять только из латинских букв и цифр. Используйте форматы jpg,gif,png,jpeg.');
+						$errors = true;
+					
+					}
 			} else {
 				$this->errorAddErrors('Не удалось загрузить картику. Обратитесь к администратору сайта.');	
 				$errors = true;
@@ -1095,50 +1125,87 @@ class data_custom extends def_module {
 			$this->errorAddErrors('Не заполнены поля');
 			$this->errorThrow('public');
 		}
-				
+			
 		// получить текущего пользователя 
 		$permissions = permissionsCollection::getInstance();
 		$userId = $permissions->getUserId();
 		$objectsCollection = umiObjectsCollection::getInstance();
 		$user = $objectsCollection->getObject($userId);
 	
+		 //Получим иерархический типа страницы - "Новость"
+		$hierarchyTypes = umiHierarchyTypesCollection::getInstance();
+		$hierarchyType = $hierarchyTypes->getTypeByName("news", "item");
+		$hierarchyTypeId = $hierarchyType->getId();
+		 
 		$hierarchy = umiHierarchy::getInstance();
-		$promo = $hierarchy->getIdByPath($user->imya_hosta.'/promotionsandnews');
-		
-		$newPromoId = $hierarchy->addElement($promo,58,$promo_name,NULL,58);
-
-		if($newPromoId === false) {
-			$this->errorAddErrors('Не удалось добавть. Обратитесь к администратору сайта.');
-			$this->errorThrow('public');
+		 
+		//Получим id родительской страницы
+		$parentElementId = $hierarchy->getIdByPath($user->imya_hosta.'/promotionsandnews/');
+		 
+		//add new element
+		$newElementId = $hierarchy->addElement($parentElementId, $hierarchyTypeId, $promo_name);
+		if($newElementId === false) {
+			echo "Не удалось создать новую страницу";
 		}
-		 //Установим права на страницу в состояние "по умолчанию"
-		$permissions->setDefaultPermissions($newPromoId);
-		$page = $hierarchy->getElement($newPromoId); 
-		$page->setIsActive(true);
-		$page->content = $description;
+		 
+		//Установим права на страницу в состояние "по умолчанию"
+		$permissions = permissionsCollection::getInstance();
+		$permissions->setDefaultPermissions($newElementId);
+		 
+		//Получим экземпляр страницы
+		$newElement = $hierarchy->getElement($newElementId);
 		
-		// загружаем файлы
-		$uploaddir = 'images/stores/'.$user->shopid.'/promo/';
-		$filetype = array ( 'jpg', 'gif', 'png', 'jpeg');
-		$imgName = $_FILES["imageN"]["name"];
+		if($newElement instanceof umiHierarchyElement) {
+			//Заполним новую страницу свойствами
+			$newElement->setValue("h1", $newElementName);
+			$newElement->setValue("content", $description);
+			$newElement->setValue("publish_time", time()); //Время публикации - сейчас
+		  
 			
-		//mkdir("images/stores/".$user->shopid."/promo");
-		if($_FILES["imageN"]["size"] > 1024*3*1024)
-		{
-			$this->errorAddErrors('Размер файла превышает три мегабайта');
-			$this->errorThrow('public');
-		}
-		// Проверяем загружен ли файл
-		if(is_uploaded_file($_FILES["imageN"]["tmp_name"]))
-		{
-			// Если файл загружен успешно, перемещаем его
-			// из временной директории в конечную
-			move_uploaded_file($_FILES["imageN"]["tmp_name"], $uploaddir.$imgName);
+			// загружаем файлы
+			$uploaddir = 'images/stores/'.$user->shopid.'/promo/';
+			$imgName = $_FILES["imageN"]["name"];
+				
+			//mkdir("images/stores/".$user->shopid."/promo");
+			if($_FILES["imageN"]["size"] > 1024*3*1024)
+			{
+				$this->errorAddErrors('Размер файла превышает три мегабайта');
+				$errors = true;
+			}
+			// Проверяем загружен ли файл
+			if(is_uploaded_file($_FILES["imageN"]["tmp_name"]))
+			{
+				// Если файл загружен успешно, перемещаем его
+				// из временной директории в конечную
+				if ($this->checkImageFile($imgName)) {
+					move_uploaded_file($_FILES["imageN"]["tmp_name"], $uploaddir.$imgName);
+				}
+				else {
+					$this->errorAddErrors('Не удалось загрузить картику.'.$imgName.' Имя или тип файла не поддерживается. Имя должно состоять только из латинских букв и цифр. Используйте форматы jpg,gif,png,jpeg.');
+					$errors = true;
+				}
+				
+			} else {
+				$this->errorAddErrors('Ошибка загрузки файла. Обратитесь к администратору сайта.');
+				$errors = true;
+			}
+			
+			if(!$errors) {
+				$image = new umiImageFile('./'.$uploaddir.$imgName);
+				$newElement->setValue("anons_pic", $image);
+			}
+			
+			//Укажем, что страница является активной
+			$newElement->setIsActive(true);
+
+			//Подтвердим внесенные изменения
+			$newElement->commit();
+		  
 		} else {
-			$this->errorAddErrors('Ошибка загрузки файла. Обратитесь к администратору сайта.');
+		
+			$this->errorAddErrors('Не удалось добавить. Обратитесь к администратору сайта.');
 			$this->errorThrow('public');
 		}
-		$page->anons_pic = $uploaddir.$imgName;
 		
 		if($errors) $this->errorThrow('public');
 		
@@ -1193,6 +1260,12 @@ class data_custom extends def_module {
 	
 	
 	
+	public function checkImageFile($name) {
+		if (!preg_match('/^[a-zA-Z0-9]{1,25}.jpg|gif|png|jpeg|GIF|JPG|PNG|JPEG$/', $name))
+			return false;
+		else
+			return true;
+	}
 	
 	public function addSlide() {
 			// Страница для вывода в случае ошибки
@@ -1238,22 +1311,28 @@ class data_custom extends def_module {
 		//mkdir("images/stores/".$user->shopid."/Slider");
 		if($_FILES["imageN"]["size"] > 1024*3*1024)
 		{
-			$this->errorAddErrors('Размер файла превышает три мегабайта');
-			$this->errorThrow('public');
+			$this->errorAddErrors('Размер файла превышает 3 мегабайта');
+			$errors = true;
 		}
 		// Проверяем загружен ли файл
 		if(is_uploaded_file($_FILES["imageN"]["tmp_name"]))
 		{
 			// Если файл загружен успешно, перемещаем его
 			// из временной директории в конечную
-			move_uploaded_file($_FILES["imageN"]["tmp_name"], $uploaddir.$imgName);
+			if ($this->checkImageFile($imgName)) {
+					move_uploaded_file($_FILES["imageN"]["tmp_name"], $uploaddir.$imgName);
+				}
+			else {
+				$this->errorAddErrors('Не удалось загрузить картику.'.$imgName.' Имя или тип файла не поддерживается. Имя должно состоять только из латинских букв и цифр. Используйте форматы jpg,gif,png,jpeg.');
+				$errors = true;
+			}
 		} else {
 			$this->errorAddErrors('Ошибка загрузки файла. Обратитесь к администратору сайта.');
-			$this->errorThrow('public');
+			$errors = true;
 		}
-		$page->photo = $uploaddir.$imgName;
 		
-		if($errors) $this->errorThrow('public');
+		if(!$errors) $page->photo = './'.$uploaddir.$imgName;
+		else $this->errorThrow('public');
 		
 		
 		$this->redirect($this->pre_lang . "/stranicy_dlya_lichnogo_kabineta/slajder/");
@@ -1306,14 +1385,12 @@ class data_custom extends def_module {
 	
 	
 	public function test($categoryID=NULL, $amount=0, $domain) {
-		//echo "<br/>begin test";
-
-		$refererUrl = getServer('HTTP_REFERER');
-		//echo $refererUrl;
-		$refererUrl = 'http://test1magaz.tigra21.ru/goods/palto_10/';
-		outputBuffer::current()->redirect($refererUrl);
+		echo "<br/>begin test";
+		$s = "123123.jp";
+		if ($this->checkImageFile($s)) echo "<br/> image";
+		else echo "<br/> не имадже";
 		
-		//echo "<br/>end test";
+		echo "<br/>end test";
 	}
 	
 	public function errortest() {
